@@ -1,0 +1,141 @@
+{
+  "9": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "65",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Salvar Imagem"
+    }
+  },
+  "62": {
+    "inputs": {
+      "clip_name": "qwen_3_4b.safetensors",
+      "type": "lumina2",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Carregar CLIP"
+    }
+  },
+  "63": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Carregar VAE"
+    }
+  },
+  "65": {
+    "inputs": {
+      "samples": [
+        "70",
+        0
+      ],
+      "vae": [
+        "63",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decodificar"
+    }
+  },
+  "66": {
+    "inputs": {
+      "unet_name": "z_image_turbo_bf16.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Carregar Modelo de Difusão"
+    }
+  },
+  "67": {
+    "inputs": {
+      "text": "masterpiece, high quality, cinematic 3D animated movie style, stylized 3D character, elderly Brazilian man, 75 years old, short silver hair, thick white mustache, kind expressive brown eyes, gentle sad expression, wearing a brown knitted cardigan over a beige shirt, standing beside a rustic wooden dining table, carefully placing two white dinner plates on the table, one empty wooden chair, cozy countryside house interior, warm golden sunset light coming through the window, emotional storytelling atmosphere, beautiful detailed 3D rendering, soft global illumination, realistic fabric textures, expressive face, warm color palette, cinematic composition, depth of field, vertical portrait composition, full character visible, professional animated feature film quality",
+      "clip": [
+        "62",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Codificação de Texto CLIP (Prompt)"
+    }
+  },
+  "68": {
+    "inputs": {
+      "width": 768,
+      "height": 1344,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "69": {
+    "inputs": {
+      "shift": 3,
+      "model": [
+        "66",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "70": {
+    "inputs": {
+      "seed": 42,
+      "steps": 8,
+      "cfg": 1,
+      "sampler_name": "res_multistep",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "69",
+        0
+      ],
+      "positive": [
+        "67",
+        0
+      ],
+      "negative": [
+        "71",
+        0
+      ],
+      "latent_image": [
+        "68",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "71": {
+    "inputs": {
+      "text": "anime, manga, 2d illustration, flat cartoon, photorealistic, live action, low quality, blurry, deformed face, bad anatomy, extra fingers, missing fingers, extra limbs, distorted hands, duplicate characters, duplicate plates, floating objects, bad proportions, text, watermark, logo, cropped head, oversaturated, noisy, grainy",
+      "clip": [
+        "62",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Codificação de Texto CLIP (Prompt)"
+    }
+  }
+}

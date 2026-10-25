@@ -1,0 +1,1530 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Histórias Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Inter:wght@400;500;600;700&family=Anton&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --soft:#f7f7f9; --soft2:#f1f1f4; --line:#e8e8ec; --line2:#dcdce2;
+  --ink:#0b0b10; --ink2:#3f3f48; --mute:#71717a;
+  --p:#7008e7; --p2:#5b06bd; --pl:#f3ebff; --pb:#d9c2ff; --pt:#6d12d6;
+  --bl:#eff6ff; --bb:#9cc5ff; --bt:#1d4ed8;
+  --ok:#16a34a; --warn:#d97706; --err:#dc2626;
+  --r:14px;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  color:var(--ink); background:var(--bg);
+}
+*{box-sizing:border-box} html,body{margin:0;background:var(--bg)}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+a{color:inherit}
+a.btn{text-decoration:none}
+h1,h2,h3,.dm{font-family:"DM Sans",Inter,sans-serif;letter-spacing:-.01em}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+svg.fill{fill:currentColor;stroke:none}
+
+/* layout */
+.app{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;background:#fff}
+.logo{height:73px;display:flex;align-items:center;gap:10px;padding:0 24px;border-bottom:1px solid var(--line);font-family:"DM Sans",Inter,system-ui,sans-serif;font-weight:700;font-size:23px;letter-spacing:-.03em;text-decoration:none}
+.logo svg{color:var(--p);width:28px;height:28px}
+.nav{padding:28px 12px;display:flex;flex-direction:column;gap:6px}
+.nav a{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:10px;text-decoration:none;font-size:19px;color:var(--ink)}
+.nav a:hover{background:var(--soft)}
+.nav a.on{background:var(--pl);color:var(--pt)}
+.side-bottom{margin-top:auto;padding:16px 20px 20px}
+.svc{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px}
+.svc-title{display:flex;align-items:center;justify-content:space-between;font-weight:600;margin-bottom:8px;color:var(--ink2)}
+.svc-row{display:flex;align-items:center;gap:8px;padding:3px 0;color:var(--mute)}
+.dot{width:8px;height:8px;border-radius:50%;background:#d4d4d8;flex:none}
+.dot.ok{background:#22c55e}.dot.bad{background:#f59e0b}
+.user{display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid var(--line);color:var(--mute);font-size:15px}
+.av{width:38px;height:38px;border-radius:50%;background:var(--pl);color:var(--pt);display:grid;place-items:center;font-weight:600}
+.main{min-width:0;display:flex;flex-direction:column}
+.top{height:73px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 30px;gap:10px;font-size:17px;color:var(--mute)}
+.top b{font-weight:500;color:var(--ink)}
+.top .mobile-logo{display:none}
+.content{padding:30px 30px 80px;width:100%}
+.narrow{max-width:780px;margin:0 auto}
+.wide{max-width:1180px;margin:0 auto}
+
+/* generic */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:50px;padding:0 20px;border-radius:12px;font-weight:600;font-size:17px;background:var(--p);color:#fff;transition:background .15s,opacity .15s;white-space:nowrap}
+.btn:hover{background:var(--p2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line2)}
+.btn.ghost:hover{background:var(--soft)}
+.btn.sm{height:38px;font-size:14px;padding:0 14px;border-radius:10px}
+.btn.danger{background:#fff;color:var(--err);border:1px solid #fecaca}
+.btn.danger:hover{background:#fef2f2}
+.badge{display:inline-flex;align-items:center;height:27px;padding:0 12px;border-radius:999px;font-size:14px;font-weight:600;background:var(--pl);color:var(--pt);border:1px solid var(--pb);font-family:Inter}
+.badge.blue{background:var(--bl);color:var(--bt);border-color:var(--bb)}
+.badge.new{height:20px;font-size:11px;padding:0 7px;border-radius:5px;letter-spacing:.04em;border:0}
+.badge.prem{height:20px;font-size:11px;padding:0 7px;border-radius:5px;letter-spacing:.04em;border:0;background:#fff4e5;color:#c26a00}
+.muted{color:var(--mute)}
+.err{color:var(--err);font-size:14px}
+.field{margin-bottom:26px}
+.label{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500;margin-bottom:12px}
+.input,.textarea,.select{width:100%;border:1px solid var(--line2);border-radius:12px;padding:0 16px;height:50px;font-size:17px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+.textarea{padding:12px 16px;height:auto;line-height:1.5;resize:vertical}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(112,8,231,.12)}
+.select{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;padding-right:44px}
+.help{display:flex;justify-content:space-between;gap:12px;margin-top:9px;color:var(--mute);font-size:16px}
+.card{border:1px solid var(--line);border-radius:var(--r);background:#fff}
+.empty{border:1px dashed var(--line2);border-radius:var(--r);padding:48px 24px;text-align:center;color:var(--mute)}
+.empty h3{color:var(--ink);margin:12px 0 6px;font-size:22px}
+.pagehead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.pagehead h1{margin:0;font-size:30px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#18181b;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.2);max-width:calc(100% - 32px)}
+
+/* wizard */
+.bars{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin:2px 0 46px}
+.bars span{height:9px;border-radius:9px;background:var(--soft2);transition:background .3s}
+.bars span.on{background:var(--p)}
+.wtitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wtitle h2{margin:0;font-size:26px;font-weight:600}
+.wsub{color:var(--mute);font-size:18px;margin:28px 0 30px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:30px}
+.tab{display:flex;align-items:center;gap:10px;padding:10px 20px 12px;font-size:18px;color:var(--mute);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--p);border-color:var(--p)}
+.wfoot{display:flex;justify-content:space-between;align-items:center;margin-top:46px;gap:12px}
+.wfoot .spacer{flex:1}
+.presets{display:flex;flex-direction:column;gap:12px;max-height:450px;overflow:auto;padding-right:10px}
+.preset{text-align:left;border:1px solid var(--line);border-radius:var(--r);padding:22px 20px;transition:border-color .15s,background .15s}
+.preset:hover{background:var(--soft)}
+.preset.on{border-color:var(--p);background:#faf6ff;box-shadow:0 0 0 1px var(--p) inset}
+.preset b{display:block;font-family:"DM Sans",Inter,system-ui,sans-serif;font-weight:500;font-size:20px;margin-bottom:8px}
+.preset span{color:var(--mute);font-size:17px}
+
+.chips{display:inline-flex;max-width:100%;overflow-x:auto;background:var(--soft2);border-radius:14px;padding:5px;gap:4px;margin-bottom:18px}
+.chip{padding:8px 16px;border-radius:10px;font-size:18px;color:var(--mute)}
+.chip small{font-size:15px;margin-left:4px}
+.chip.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.voices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.voice{position:relative;display:flex;align-items:center;gap:14px;border:2px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left;min-height:88px;background:#fff}
+.voice:hover{border-color:var(--line2)}
+.voice.on{border-color:var(--p);background:#faf6ff}
+.play{width:46px;height:46px;border-radius:50%;background:#efe4ff;color:var(--p);display:grid;place-items:center;flex:none}
+.play:hover{background:#e3d0ff}
+.play svg{width:18px;height:18px}
+.voice .vn{font-family:"DM Sans",Inter,system-ui,sans-serif;font-weight:600;font-size:20px;display:block;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vtag{display:inline-block;font-size:14px;font-weight:600;padding:1px 7px;border-radius:4px;border:1px solid}
+.check{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--p);color:#fff;display:grid;place-items:center}
+.check svg{width:15px;height:15px;stroke-width:3}
+.range{display:flex;align-items:center;gap:14px;margin-top:22px;color:var(--ink2);font-size:16px}
+.range input{flex:1;accent-color:var(--p)}
+
+.tracks{display:flex;flex-direction:column;gap:10px}
+.track{display:flex;align-items:center;gap:18px;border:1px solid var(--line);border-radius:12px;padding:18px 20px;text-align:left;cursor:pointer;transition:background .15s}
+.track:hover{background:var(--soft)}
+.track.on{border-color:var(--p);background:#faf6ff;box-shadow:0 0 0 1px var(--p) inset}
+.swatch{width:40px;height:40px;border-radius:7px;flex:none}
+.track .tn{font-size:17px;font-weight:500}
+.track .ts{color:var(--mute);font-size:16px;margin-top:2px}
+.sq{margin-left:auto;width:52px;height:46px;border-radius:9px;border:1px solid var(--line2);display:grid;place-items:center;background:#fff;flex:none}
+.sq svg{width:17px;height:17px}
+.drop{border:2px dashed var(--line2);border-radius:var(--r);padding:40px 20px;text-align:center;color:var(--mute);cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--p);background:#faf6ff;color:var(--pt)}
+
+.styles{display:flex;gap:20px;overflow-x:auto;padding:4px 4px 16px;scroll-snap-type:x mandatory}
+.style{flex:none;width:200px;scroll-snap-align:start;text-align:left}
+.style .img{width:200px;height:390px;border-radius:12px;overflow:hidden;position:relative;background:var(--soft2);border:3px solid transparent;transition:border-color .15s}
+.style.on .img{border-color:var(--p)}
+.style img{width:100%;height:100%;object-fit:cover;display:block}
+.style .ph{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;gap:8px;color:#fff}
+.style .ph small{font-size:13px;opacity:.9;line-height:1.35}
+.style .nm{font-size:18px;margin-top:12px;font-weight:500}
+.style .gen{background:rgba(255,255,255,.95);color:var(--pt);border-radius:9px;height:34px;font-size:13px;font-weight:600}
+.style .sel{position:absolute;right:10px;top:10px}
+.style .sel .check{position:static;transform:none}
+
+.caps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.cap{position:relative;border:2px solid var(--line);border-radius:14px;padding:20px 20px 16px;text-align:left;background:#fff}
+.cap:hover{border-color:var(--line2)}
+.cap.on{border-color:var(--p)}
+.cap .pv{height:115px;border-radius:10px;background:linear-gradient(180deg,#3d3d3d,#7a7a7a);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.02;overflow:hidden;text-align:center}
+.cap .cn{font-size:18px;margin-top:16px}
+.cap .check{top:10px;right:10px;transform:none}
+.pv span{display:block;white-space:nowrap}
+.cs-bold_stroke{font:30px "Archivo Black","Arial Black",sans-serif;color:#fff;-webkit-text-stroke:7px #000;paint-order:stroke fill}
+.cs-red_highlight{font:28px "Archivo Black","Arial Black",sans-serif;color:#fff;-webkit-text-stroke:6px #000;paint-order:stroke fill}
+.cs-red_highlight .hl{color:#ff2d2d;text-shadow:0 0 12px rgba(255,45,45,.7)}
+.cs-sleek{font:28px "Archivo Black","Arial Black",sans-serif;color:#fff;text-shadow:0 0 10px rgba(255,255,255,.55),0 3px 10px rgba(0,0,0,.6)}
+.cs-karaoke{font:27px "Archivo Black","Arial Black",sans-serif;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+.cs-karaoke .hl{background:#7c3aed;border-radius:8px;padding:0 7px;margin-bottom:2px}
+.cs-majestic{font:italic 34px Anton,Impact,sans-serif;color:#fff;text-shadow:0 4px 12px #000,0 0 3px #000}
+.cs-beast{font:italic 40px Anton,Impact,sans-serif;color:#fff;-webkit-text-stroke:8px #000;paint-order:stroke fill}
+.cs-beast span{transform:rotate(-3deg)}
+.cs-elegant{font:30px Georgia,"Times New Roman",serif;color:#fff;letter-spacing:.02em;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.cs-pixel{font:700 30px Consolas,"Courier New",monospace;color:#fff;-webkit-text-stroke:8px #000;paint-order:stroke fill;letter-spacing:-.02em}
+.cs-clarity{font:700 30px "Segoe UI",Inter,sans-serif;color:#fff;text-shadow:0 3px 10px rgba(0,0,0,.55)}
+
+.toggles{display:flex;flex-direction:column;gap:20px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pgroup{display:none;margin-top:18px}.pgroup.on{display:block}
+.psec{padding:24px;margin-bottom:22px}.psec h3{margin:0 0 4px;font-size:20px}.psec>p{margin:0 0 18px;color:var(--mute);font-size:15px}
+.castgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.castc{display:flex;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px}
+.castc img,.castc .noimg{width:86px;height:128px;object-fit:cover;border-radius:8px;background:var(--soft2);flex:none;display:grid;place-items:center;color:var(--mute)}
+.testline{font-size:14px;margin-left:12px}.testline.ok{color:var(--ok)}.testline.bad{color:var(--err)}
+.mode{position:relative;text-align:left;border:2px solid var(--line);border-radius:var(--r);padding:20px 48px 20px 20px;background:#fff}
+.mode:hover{border-color:var(--line2)}
+.mode.on{border-color:var(--p);background:#faf6ff}
+.mode .tt{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500;margin-bottom:6px}
+.mode p{margin:0;color:var(--mute);font-size:15px;line-height:1.45}
+.mode .check{top:18px;right:16px;transform:none}
+.tog{display:flex;align-items:center;gap:20px;border:1px solid var(--line);border-radius:var(--r);padding:22px 20px}
+.tog .tt{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500;margin-bottom:6px}
+.tog p{margin:0;color:var(--mute);font-size:15px;line-height:1.45}
+.tog.dis{opacity:.55}
+.sw{margin-left:auto;width:56px;height:32px;border-radius:99px;background:#e4e4e7;position:relative;flex:none;transition:background .2s}
+.sw:after{content:"";position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw.on{background:var(--p)}.sw.on:after{transform:translateX(24px)}
+.plats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.plat{display:flex;align-items:center;gap:14px;border:2px solid var(--line);border-radius:var(--r);padding:20px;text-align:left;font-size:18px;font-weight:500;position:relative}
+.plat.on{border-color:var(--p);background:#faf6ff}
+.plat .pi{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px}
+.note{background:var(--soft);border-radius:12px;padding:14px 16px;color:var(--mute);font-size:15px;line-height:1.5}
+.note b{color:var(--ink2)}
+.inline{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.time{width:160px}
+.checkline{display:flex;align-items:center;gap:12px;font-size:16px;color:var(--ink2);margin-top:22px;cursor:pointer}
+.checkline input{width:20px;height:20px;accent-color:var(--p)}
+
+/* series + videos */
+.slist{display:flex;flex-direction:column;gap:16px}
+.scard{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:20px;align-items:center;padding:16px 20px 16px 16px}
+.sthumb{width:96px;height:150px;border-radius:10px;background:linear-gradient(160deg,#ede4ff,#f7f2ff);overflow:hidden;display:grid;place-items:center;color:var(--p)}
+.sthumb img{width:100%;height:100%;object-fit:cover}
+.scard h3{margin:0 0 6px;font-size:21px}
+.scard p{margin:0 0 12px;color:var(--mute);font-size:15px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.meta span{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);background:var(--soft);border-radius:7px;padding:5px 9px}
+.meta svg{width:14px;height:14px}
+.sact{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:190px}
+.status-line{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink2);justify-content:flex-end}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:20px}
+.vcard{text-align:left;cursor:pointer}
+.vthumb{aspect-ratio:9/16;border-radius:12px;background:var(--soft2);overflow:hidden;position:relative;border:1px solid var(--line)}
+.vthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.vthumb .ov{position:absolute;inset:auto 0 0 0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.72));color:#fff;font-size:13px}
+.vthumb .stt{position:absolute;left:10px;top:10px;font-size:12px;font-weight:600;border-radius:6px;padding:4px 8px;background:#fff;color:var(--ink)}
+.stt.done{background:#dcfce7;color:#166534}.stt.error{background:#fee2e2;color:#991b1b}.stt.cancelled{background:#f4f4f5;color:#52525b}.stt.paused{background:#fef3c7;color:#92400e}
+.stt.run{background:var(--pl);color:var(--pt)}
+.stt.rev{background:#fef3c7;color:#92400e}
+/* página de revisão */
+.rvw{max-width:1240px;margin:0 auto}
+.rvw-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:22px}
+.rvw-head h1{margin:6px 0 8px;font-size:28px}
+.chipline{display:flex;gap:8px;flex-wrap:wrap}
+.chip2{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;border-radius:999px;padding:5px 11px;background:var(--soft);color:var(--ink2)}
+.chip2.ok{background:#dcfce7;color:#166534}.chip2.warn{background:#fef3c7;color:#92400e}.chip2.bad{background:#fee2e2;color:#991b1b}
+.chip2 svg{width:14px;height:14px}
+.rvw-grid{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px;align-items:start}
+.rvw-side{display:flex;flex-direction:column;gap:18px;position:sticky;top:20px}
+.rsec{padding:20px 22px}
+.rsec h3{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:8px}
+.rsec h3 svg{width:18px;height:18px;color:var(--p)}
+.rsec .sub{color:var(--mute);font-size:14px;margin:0 0 16px;line-height:1.45}
+.scard3{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#fff;transition:border-color .15s}
+.scard3:focus-within{border-color:var(--p);box-shadow:0 0 0 3px rgba(112,8,231,.08)}
+.scard3.edited{border-color:#f59e0b}
+.scard3 .shead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;color:var(--mute)}
+.scard3 .shead b{color:var(--ink);font-size:14px}
+.scard3 textarea{width:100%;border:0;outline:none;resize:none;font-size:16px;line-height:1.55;padding:0;min-height:0;background:transparent}
+.scard3 .meta2{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.scard3 .meta2 span{font-size:12px;background:var(--soft);color:var(--ink2);border-radius:6px;padding:3px 8px}
+.wc{font-variant-numeric:tabular-nums}.wc.long{color:#b45309;font-weight:600}
+.savebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px}
+.checklist{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.ck{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.ck:first-child{border-top:0}
+.ck .ic2{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;flex:none;margin-top:1px}
+.ck .ic2 svg{width:12px;height:12px;stroke-width:3}
+.ck.pass .ic2{background:#dcfce7;color:#16a34a}.ck.fail .ic2{background:#fee2e2;color:#dc2626}
+.ck details summary{font-weight:500;color:var(--ink);margin:0;font-size:14px}
+.ck details p{margin:6px 0 0;color:var(--mute);font-size:13px;line-height:1.45}
+.issue{border-radius:10px;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5}
+.issue.critical{background:#fef2f2;border:1px solid #fecaca}.issue.warning{background:#fffbeb;border:1px solid #fde68a}
+.issue b{display:block;margin-bottom:4px}
+.issue .ev{color:var(--ink2);font-style:italic;margin:4px 0}
+.issue .fix{color:#166534}
+.slider{display:flex;align-items:center;gap:12px;margin:6px 0 14px}
+.slider input[type=range]{flex:1;accent-color:var(--p)}
+.slider output{width:64px;text-align:right;font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.swline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:4px 0 10px;font-size:15px}
+.rsec .field{margin-bottom:14px}.rsec .label{font-size:15px;margin-bottom:8px}
+.rsec audio{width:100%;margin-top:6px}
+.approve-box{border:2px solid var(--p);background:#faf6ff}
+.approve-box.blocked{border-color:#f59e0b;background:#fffbeb}
+.busy{display:flex;gap:14px;align-items:center;background:var(--pl);color:var(--pt);border-radius:12px;padding:14px 16px;margin-bottom:18px;font-weight:500}
+.busy .spin{position:static;width:22px;height:22px;border-width:3px;margin:0}
+.hist{font-size:13px;color:var(--ink2);line-height:1.5}
+.hist .h{border-left:3px solid var(--pb);padding:4px 0 4px 12px;margin:10px 0}
+@media (max-width:1050px){.rvw-grid{grid-template-columns:1fr}.rvw-side{position:static}}
+.prog{height:6px;border-radius:6px;background:rgba(255,255,255,.35);margin-top:8px;overflow:hidden}
+.prog i{display:block;height:100%;background:#fff;border-radius:6px;transition:width .4s}
+.vcard h4{margin:10px 0 3px;font-size:15px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vcard small{color:var(--mute);font-size:13px}
+.spin{width:30px;height:30px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp 1s linear infinite;margin:auto;position:absolute;inset:0}
+.spin.dark{border-color:var(--pb);border-top-color:var(--p)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.modal{position:fixed;inset:0;background:rgba(10,10,15,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.mbox{background:#fff;border-radius:18px;max-width:980px;width:100%;max-height:calc(100vh - 40px);overflow:auto;display:grid;grid-template-columns:340px minmax(0,1fr);align-items:start}
+.mplayer{background:#0b0b10;display:flex;align-items:center;justify-content:center;align-self:start;height:fit-content;min-height:400px;border-radius:18px 0 0 18px;position:relative}
+.mplayer video,.mplayer img{width:100%;max-height:calc(100vh - 40px);aspect-ratio:9/16;object-fit:contain;display:block}
+.minfo{padding:26px 26px 22px;min-width:0}
+.minfo h2{margin:0 0 6px;font-size:23px;padding-right:36px}
+.close{position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--soft)}
+.close:hover{background:var(--soft2)}
+.box{background:var(--soft);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.55;color:var(--ink2);margin-top:12px;white-space:pre-wrap;word-break:break-word}
+.scenes{margin-top:16px;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto}
+.scene{font-size:14px;line-height:1.5;border-left:3px solid var(--pb);padding:2px 0 2px 12px;color:var(--ink2)}
+.row-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+details summary{cursor:pointer;color:var(--ink2);font-weight:600;font-size:15px;margin-top:18px}
+
+.guide{padding:24px;margin-bottom:16px}
+.guide h3{margin:0 0 10px;font-size:20px}
+.guide ol,.guide ul{margin:0;padding-left:22px;line-height:1.75;color:var(--ink2)}
+.guide code{background:var(--soft2);padding:2px 6px;border-radius:5px;font-size:14px}
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:30px}
+.svc-card{padding:16px}
+.svc-card b{display:flex;align-items:center;gap:8px;font-size:16px;margin-bottom:4px}
+.svc-card small{color:var(--mute);font-size:13px;word-break:break-all}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
+
+/* revisão */
+.review{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.rv{display:grid;grid-template-columns:170px minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 20px;border-top:1px solid var(--line)}
+.rv:first-child{border-top:0}
+.rv .k{color:var(--mute);font-size:15px}
+.rv .val{font-size:16px;line-height:1.45;min-width:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.rv .ed{color:var(--p);font-weight:600;font-size:14px}
+.rv .ed:hover{text-decoration:underline}
+.rv-thumb{display:inline-flex;align-items:center;gap:12px}
+.rv-thumb img,.rv-thumb i{width:34px;height:60px;border-radius:6px;object-fit:cover;background:var(--soft2);display:block}
+.rv .pv{height:52px;width:120px;border-radius:8px;background:linear-gradient(180deg,#3d3d3d,#7a7a7a);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;vertical-align:middle;transform:scale(.62);transform-origin:left center;margin:-8px 0}
+/* tela de geração */
+.gen-wrap{max-width:820px;margin:0 auto}
+.gen-head{text-align:center;margin:10px 0 30px}
+.gen-head h1{font-size:30px;margin:0 0 8px}
+.gen-head p{color:var(--mute);font-size:17px;margin:0}
+.gen-card{padding:28px}
+.gbar{height:12px;border-radius:12px;background:var(--soft2);overflow:hidden;margin:6px 0 10px}
+.gbar i{display:block;height:100%;background:linear-gradient(90deg,var(--p),#a855f7);border-radius:12px;transition:width .6s}
+.gpct{display:flex;justify-content:space-between;color:var(--mute);font-size:15px}
+.gpct b{color:var(--ink);font-size:17px}
+.gsteps{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:26px}
+.gstep{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;font-size:14px;color:var(--mute)}
+.gico{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--soft2);color:var(--mute);position:relative}
+.gico svg{width:20px;height:20px}
+.gstep.done .gico{background:var(--p);color:#fff}
+.gstep.now{color:var(--ink);font-weight:600}
+.gstep.now .gico{background:var(--pl);color:var(--p)}
+.gstep.now .gico:after{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:var(--p);animation:sp 1s linear infinite}
+.gstep.err .gico{background:#fee2e2;color:var(--err)}
+.gthumbs{display:flex;gap:10px;margin-top:26px;overflow-x:auto;padding-bottom:6px}
+.gthumbs img{width:82px;aspect-ratio:9/16;object-fit:cover;border-radius:8px;flex:none;animation:fadein .5s}
+@keyframes fadein{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.gdone{display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;align-items:start}
+.gdone video{width:100%;aspect-ratio:9/16;border-radius:14px;background:#000;display:block}
+/* estilos (configurações) */
+.stabs{margin-bottom:26px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.scard2{overflow:hidden;display:flex;flex-direction:column}
+.scard2 .im{aspect-ratio:3/4;background:var(--soft2);position:relative}
+.scard2 .im img{width:100%;height:100%;object-fit:cover;display:block}
+.scard2 .bd{padding:14px 14px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.scard2 h4{margin:0;font-size:17px}
+.scard2 p{margin:0;color:var(--mute);font-size:13px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sbtns{display:flex;gap:6px;margin-top:auto}
+.sbtns .btn{padding:0 10px;min-width:0}
+.ibtn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line2);display:grid;place-items:center;background:#fff}
+.ibtn:hover{background:var(--soft)}
+.ibtn svg{width:16px;height:16px}
+.form-modal{max-width:640px;width:100%;background:#fff;border-radius:18px;padding:26px;max-height:calc(100vh - 40px);overflow:auto;position:relative}
+.form-modal h2{margin:0 0 20px;font-size:23px}
+.form-modal .field{margin-bottom:18px}
+.form-modal .label{font-size:16px;margin-bottom:8px}
+.form-modal .help{font-size:13px}
+@media (max-width:1000px){
+  .voices,.caps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mbox{grid-template-columns:1fr}.mplayer{border-radius:18px 18px 0 0;min-height:0}.mplayer video,.mplayer img{max-height:60vh}
+}
+@media (max-width:820px){
+  .rv{grid-template-columns:1fr auto;gap:4px 12px}.rv .k{grid-column:1/-1}
+  .gsteps{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.gstep{font-size:11px}.gico{width:38px;height:38px}
+  .gdone{grid-template-columns:1fr}
+  .app{display:block}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:40;border-right:0;border-top:1px solid var(--line);flex-direction:row}
+  .side .logo,.side-bottom{display:none}
+  .nav{flex-direction:row;padding:6px;gap:0;width:100%}
+  .nav a{flex:1;flex-direction:column;gap:3px;font-size:12px;padding:8px 4px;text-align:center}
+  .top{padding:0 16px;height:60px;font-size:15px}
+  .top .mobile-logo{display:flex;color:var(--p)}
+  .content{padding:22px 16px 110px}
+  .bars{gap:5px;margin-bottom:30px}
+  .wsub{font-size:16px;margin:18px 0 22px}
+  .voices,.caps,.plats,.grid2,.modes{grid-template-columns:1fr}
+  .scard{grid-template-columns:72px minmax(0,1fr)}
+  .sthumb{width:72px;height:112px}
+  .sact{grid-column:1/-1;min-width:0;flex-direction:row;flex-wrap:wrap}
+  .sact .btn{flex:1}
+  .status-line{width:100%;justify-content:flex-start}
+  .vgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .btn{font-size:16px}
+  .tab{padding:10px 12px 12px;font-size:16px}
+  .chip{font-size:15px;padding:8px 12px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <a class="logo" href="#/series"><svg class="i" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>HistóriasStudio</a>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-bottom">
+      <div class="user"><div class="av">A</div><div style="flex:1">Alan Passos</div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top" id="crumb"></header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<script src="/music-generation.js?v=1"></script>
+<script>
+/* ------------------------------------------------------------------ util */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const P = {
+  logo:'<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/>',
+  series:'<path d="M3 3v18h18"/><path d="M7 15v2M11 11v6M15 13v4M19 8v9"/>',
+  film:'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18M3 7.5h4M3 12h18M3 16.5h4M17 3v18M17 7.5h4M17 16.5h4"/>',
+  book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  layers:'<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+  brush:'<path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/>',
+  play:'<polygon points="6 3 20 12 6 21 6 3"/>',
+  pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  right:'<path d="m9 18 6-6-6-6"/>',
+  left:'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+  plus:'<path d="M5 12h14M12 5v14"/>',
+  zap:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+  trash:'<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+  x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  copy:'<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  folder:'<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>',
+  music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  mic:'<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/>',
+  image:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+  type:'<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',
+};
+const ic = (n, cls='') => `<svg class="i ${cls}" viewBox="0 0 24 24">${P[n]}</svg>`;
+const icf = n => `<svg class="i fill" viewBox="0 0 24 24">${P[n]}</svg>`;
+async function api(path, opts={}) {
+  const o = Object.assign({headers:{}}, opts);
+  if (o.json !== undefined) { o.method = o.method || 'POST'; o.body = JSON.stringify(o.json); o.headers['Content-Type'] = 'application/json'; }
+  const r = await fetch(path, o);
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error((j && j.error) || ('Erro ' + r.status));
+  return j;
+}
+function toast(msg, ms=3200) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms);
+}
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+};
+function hash(s) { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); }
+
+/* ------------------------------------------------------------------ dados fixos */
+const PRESETS = [
+  {id:'terror', name:'Histórias de terror', desc:'Histórias assustadoras que dão arrepios',
+   prompt:'Original scary stories that give goosebumps: urban legends, haunted houses, strange encounters on lonely roads, unexplained phenomena. Build tension slowly, use vivid sensory details and end each story with a chilling twist.'},
+  {id:'historia', name:'História', desc:'Vídeos virais sobre história, da antiguidade aos dias de hoje.',
+   prompt:'Viral short videos about fascinating and little-known moments of world history, from ancient times to the modern day. Accurate facts told as a gripping story, with a surprising detail that makes viewers say "I never knew that".'},
+  {id:'mitologia', name:'Mitologia Grega', desc:'Histórias chocantes e dramáticas da mitologia grega.',
+   prompt:'Shocking and dramatic stories from Greek mythology: gods, heroes, monsters, betrayals and curses. Retell each myth faithfully but with cinematic drama and a powerful ending.'},
+  {id:'figuras', name:'Figuras Históricas', desc:'A história de vida das figuras históricas mais importantes em vídeos de um minuto.',
+   prompt:'Life stories in one-minute videos about the most important and intriguing historical figures. Highlight the turning point of their lives, a surprising fact and their legacy.'},
+  {id:'familia', name:'Comédia em família', desc:'Histórias engraçadas do dia a dia das famílias brasileiras.',
+   prompt:'Brazilian everyday comedy storytelling. Create highly entertaining, relatable and original short comedy stories about Brazilian families, couples, mothers, fathers, mothers-in-law, neighbors, money problems, work, family WhatsApp groups and funny everyday misunderstandings. Focus on situations that Brazilian audiences instantly recognize, with clever humor, natural dialogue, unexpected twists and memorable recurring characters. Each episode should feel like a short Brazilian sitcom.'},
+  {id:'misterios', name:'Mistérios não resolvidos', desc:'Casos misteriosos que ninguém conseguiu explicar.',
+   prompt:'Real unsolved mysteries and strange disappearances from around the world. Present the facts, the most intriguing clues and the main theories, ending with an open question for the audience.'},
+  {id:'curiosidades', name:'Curiosidades', desc:'Fatos surpreendentes sobre o mundo, a ciência e a natureza.',
+   prompt:'Mind-blowing and verified curiosities about science, the human body, animals, nature and everyday objects. Each video focuses on one surprising fact explained in an exciting way.'},
+  {id:'biblia', name:'Histórias bíblicas', desc:'Narrativas bíblicas contadas de forma emocionante.',
+   prompt:'Bible stories retold with respect and emotion, faithful to the scriptures, highlighting the characters, the drama and the lesson of each passage.'},
+  {id:'motivacional', name:'Histórias motivacionais', desc:'Histórias curtas que inspiram e emocionam.',
+   prompt:'Short emotional and motivational stories about ordinary people overcoming difficulties, kindness between strangers and second chances, with a touching ending and a positive lesson.'},
+  {id:'ninar', name:'Histórias para dormir', desc:'Contos de fadas calmos e encantadores.',
+   prompt:'Gentle, original fairy tales and bedtime stories with magical creatures, kind heroes and cozy settings. Calm pace, warm tone and a sweet lesson at the end.'},
+];
+const TAGCOLORS = [['#ecfeff','#67e8f9','#0e7490'],['#fdf2f8','#f9a8d4','#be185d'],['#fef9c3','#fcd34d','#a16207'],['#f7fee7','#bef264','#4d7c0f'],['#e0f2fe','#7dd3fc','#0369a1'],['#dcfce7','#86efac','#15803d'],['#fde047','#eab308','#713f12'],['#ccfbf1','#5eead4','#0f766e'],['#e0e7ff','#a5b4fc','#4338ca'],['#fecaca','#f87171','#991b1b']];
+const SWATCH = ['linear-gradient(135deg,#d946ef,#db2777)','linear-gradient(135deg,#f43f5e,#dc2626)','linear-gradient(135deg,#f97316,#d97706)','linear-gradient(135deg,#10b981,#0891b2)','linear-gradient(135deg,#3b82f6,#a855f7)','linear-gradient(135deg,#a855f7,#2563eb)'];
+const STYLEGRAD = ['linear-gradient(160deg,#7c3aed,#db2777)','linear-gradient(160deg,#0f172a,#475569)','linear-gradient(160deg,#f97316,#facc15)','linear-gradient(160deg,#1e1b4b,#4c1d95)','linear-gradient(160deg,#334155,#a16207)','linear-gradient(160deg,#ec4899,#8b5cf6)','linear-gradient(160deg,#38bdf8,#a7f3d0)','linear-gradient(160deg,#78350f,#b45309)','linear-gradient(160deg,#fb7185,#fdba74)'];
+const PLATCOLOR = {tiktok:'#111', youtube:'#ef4444', instagram:'linear-gradient(135deg,#f59e0b,#ec4899,#8b5cf6)', facebook:'#2563eb'};
+const PLATABBR = {tiktok:'TT', youtube:'YT', instagram:'IG', facebook:'FB'};
+const STEP_TITLES = ['Escolha seu nicho','Idioma e Voz','Música de Fundo','Estilo de Arte','Estilo de Legenda','Efeitos','Resumo das escolhas','Detalhes da Série'];
+const STEP_SUBS = ['Selecione um modelo ou descreva seu próprio nicho','Escolha o idioma e o estilo de voz do seu vídeo','Escolha uma trilha original para cada roteiro ou selecione faixas da biblioteca','Escolha o estilo visual do seu vídeo','Escolha como as legendas vão aparecer no seu vídeo','Adicione efeitos visuais para deixar seus vídeos mais envolventes e chamativos.','Confira suas preferências; a produção do roteiro e do vídeo será automática','Finalize os detalhes da série e a agenda de publicação'];
+const OPTIONAL = {3:true, 6:true};
+
+/* ------------------------------------------------------------------ estado */
+const S = {config:null, services:{}, voices:null, voicesErr:null, music:null, series:[], videos:[], step:1,
+  nicheTab:'presets', musicTab:'library', voiceFilter:'all', playing:null, audio:new Audio(), episodeMode:null, seriesDraft:null};
+function defaultDraft() {
+  return {niche_preset:'', niche:'', example:'', language:'pt-BR', voice:'', voice_name:'', speed:1, music:[], music_volume:0.12,
+    art_style:'animacao_3d', caption_style:'red_highlight', effects:{glitch:false, hook:false, motion:'image'},
+    story_mode:'independent', music_mode:'ai', platforms:['tiktok','instagram','youtube'], name:'', duration:'30-40', publish_time:'19:00', generate_now:true};
+}
+let D = Object.assign(defaultDraft(), store.get('hs_draft', {}));
+if (!D.music_mode) D.music_mode = 'ai';
+if (!D.effects.motion) D.effects.motion = 'image';
+function saveDraft() { if (!S.episodeMode) store.set('hs_draft', D); }
+S.audio.onended = () => { S.playing = null; refreshPlayIcons(); };
+
+/* ------------------------------------------------------------------ layout */
+const NAV = [['series','Séries','series'],['videos','Vídeos','film'],['guides','Guias','book'],['settings','Configurações','gear']];
+function renderNav(active) {
+  $('#nav').innerHTML = NAV.map(([id, label, icon]) => `<a href="#/${id}" class="${active === id ? 'on' : ''}">${ic(icon)}<span>${label}</span></a>`).join('');
+}
+function crumb(parts) {
+  $('#crumb').innerHTML = `<span class="mobile-logo">${ic('logo')}</span>` + parts.map((p, i) => i === parts.length - 1 ? `<b>${esc(p[0])}</b>` : `<a href="${p[1]}" style="text-decoration:none">${esc(p[0])}</a> ${ic('right')}`).join(' ');
+}
+function renderServices() {
+  if (!$('#svcBox')) return;
+  const s = S.services, rows = [
+    ['script_provider', 'Roteiro'], ['voice_provider', 'Voz'],
+    ['image_provider', 'Imagens'], ['ffmpeg', 'FFmpeg']
+  ];
+  const all = rows.every(r => s[r[0]] && s[r[0]].ok);
+  $('#svcBox').innerHTML = `<div class="svc-title"><span>Serviços configurados</span><span style="color:${all ? 'var(--ok)' : 'var(--warn)'};font-size:12px">${all ? 'tudo pronto' : 'verificar'}</span></div>` +
+    rows.map(([k, n]) => { const item = s[k] || {}; const label = k === 'ffmpeg' ? n : `${n} · ${item.name || 'não configurado'}`;
+      return `<div class="svc-row"><span class="dot ${item.ok ? 'ok' : 'bad'}"></span>${esc(label)}</div>`; }).join('');
+}
+async function loadServices() { try { S.services = await api('/api/services'); renderServices(); } catch (e) {} }
+
+/* ------------------------------------------------------------------ router */
+let pollTimer = null;
+function route() {
+  clearInterval(pollTimer); pollTimer = null;
+  S.audio.pause(); S.playing = null; closeModal();
+  if (S.episodeMode) { S.episodeMode = null; D = S.seriesDraft || defaultDraft(); S.seriesDraft = null; S.step = 1; }
+  const h = location.hash.replace(/^#\/?/, '') || 'series';
+  const [a, b] = h.split('/');
+  if (a === 'series' && b === 'new') return viewWizard();
+  if (a === 'series' && b) return viewSeriesDetail(b);
+  if (a === 'videos') return viewVideos();
+  if (a === 'guides') return viewGuides();
+  if (a === 'settings') return b === 'estilos' ? viewStyles() : b === 'provedores' ? viewProviders() : b === 'musicas' ? viewMusicLib() : viewSettings();
+  if (a === 'gerando' && b) return viewGenerating(b);
+  if (a === 'revisar' && b) return viewReview(b);
+  return viewSeries();
+}
+window.addEventListener('hashchange', route);
+
+/* ------------------------------------------------------------------ séries */
+function styleName(id) { const s = (S.config.art_styles || []).find(x => x.id === id); return s ? s.name : id; }
+function langName(id) { const l = (S.config.languages || []).find(x => x.id === id); return l ? l.name : id; }
+function durLabel(id) { const d = (S.config.durations || []).find(x => x.id === id); return d ? d.label : id; }
+
+async function viewSeries() {
+  renderNav('series'); crumb([['Séries']]);
+  $('#view').innerHTML = `<div class="wide"><div class="pagehead"><h1>Séries</h1><a class="btn" href="#/series/new">${ic('plus')}Criar nova série</a></div><div id="slist"><div class="muted">Carregando...</div></div></div>`;
+  const draw = async () => {
+    try { S.series = await api('/api/series'); } catch (e) { $('#slist').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+    if (!S.series.length) {
+      $('#slist').innerHTML = `<div class="empty">${ic('layers')}<h3>Nenhuma série ainda</h3><p>Crie uma série e receba um vídeo novo todos os dias.</p><a class="btn" style="margin-top:12px" href="#/series/new">${ic('plus')}Criar minha primeira série</a></div>`;
+      return;
+    }
+    $('#slist').innerHTML = `<div class="slist">${S.series.map(seriesCard).join('')}</div>`;
+  };
+  await draw();
+  pollTimer = setInterval(draw, 6000);
+}
+function seriesCard(s) {
+  return `<div class="card scard">
+    <a class="sthumb" href="#/series/${s.id}">${s.thumb ? `<img src="${esc(s.thumb)}" alt="">` : ic('film')}</a>
+    <div style="min-width:0">
+      <h3><a href="#/series/${s.id}" style="text-decoration:none">${esc(s.name)}</a></h3>
+      <p>${esc(s.niche)}</p>
+      <div class="meta"><span>${ic('globe')}${esc(langName(s.language))}</span><span>${ic('mic')}${esc(s.voice_name || s.voice)}</span><span>${ic('image')}${esc(styleName(s.art_style))}</span><span>${ic('clock')}Publica às ${esc(s.publish_time)}</span><span>${ic('film')}${s.done_count} vídeo${s.done_count === 1 ? '' : 's'}${s.producing ? ` · ${s.producing} em produção` : ''}</span></div>
+    </div>
+    <div class="sact">
+      <div class="status-line">${s.active ? 'Ativa' : 'Pausada'}<button class="sw ${s.active ? 'on' : ''}" onclick="toggleSeries('${s.id}', ${!s.active})" aria-label="Ativar ou pausar"></button></div>
+      <button class="btn sm" onclick="generateNow('${s.id}')">${ic('zap')}Gerar vídeo agora</button>
+      <a class="btn sm ghost" href="#/series/${s.id}">Ver vídeos</a>
+    </div></div>`;
+}
+async function toggleSeries(id, active) {
+  try { await api('/api/series/' + id, {json:{active}}); toast(active ? 'Série ativada — um vídeo novo todo dia.' : 'Série pausada.'); route(); } catch (e) { toast(e.message); }
+}
+async function generateNow(id) {
+  try {
+    const s = await api('/api/series/' + id);
+    S.seriesDraft = JSON.parse(JSON.stringify(D));
+    S.episodeMode = {id:s.id, name:s.name};
+    D = Object.assign(defaultDraft(), s, {effects:Object.assign(defaultDraft().effects, s.effects || {})});
+    S.step = 1; S.nicheTab = D.niche_preset ? 'presets' : 'custom'; S.musicTab = 'library';
+    crumb([['Séries','#/series'],[s.name,'#/series/' + s.id],['Novo vídeo']]);
+    drawWizard(); window.scrollTo({top:0, behavior:'smooth'});
+  } catch (e) { toast(e.message); }
+}
+function cancelEpisodeSetup() {
+  const id = S.episodeMode && S.episodeMode.id;
+  S.episodeMode = null; D = S.seriesDraft || defaultDraft(); S.seriesDraft = null; S.step = 1;
+  if (id) viewSeriesDetail(id); else route();
+}
+async function deleteSeries(id) {
+  if (!confirm('Excluir esta série?')) return;
+  try { await api('/api/series/' + id + '/delete', {json:{}}); toast('Série excluída.'); location.hash = '#/series'; } catch (e) { toast(e.message); }
+}
+
+async function viewSeriesDetail(id) {
+  renderNav('series');
+  let s;
+  try { s = await api('/api/series/' + id); } catch (e) { crumb([['Séries','#/series'],['Não encontrada']]); $('#view').innerHTML = `<div class="wide empty">${esc(e.message)}</div>`; return; }
+  crumb([['Séries','#/series'],[s.name]]);
+  $('#view').innerHTML = `<div class="wide">
+    <div class="pagehead"><div><h1>${esc(s.name)}</h1><div class="muted" style="margin-top:6px">${esc(langName(s.language))} · ${esc(durLabel(s.duration))} · ${esc(styleName(s.art_style))} · ${s.story_mode === 'continuous' ? `História contínua (${s.episodes_count} episódio${s.episodes_count === 1 ? '' : 's'})` : 'Episódios independentes'}</div></div>
+      <div class="inline" style="gap:10px"><button class="btn" onclick="generateNow('${s.id}')">${ic('zap')}Gerar vídeo agora</button><button class="btn ghost" onclick="deleteSeries('${s.id}')">${ic('trash')}Excluir</button></div></div>
+    <div class="card" style="padding:20px;margin-bottom:28px">
+      <div class="inline" style="justify-content:space-between">
+        <div class="inline" style="gap:14px"><span class="label" style="margin:0">Publicação diária</span>
+          <input class="input time" type="time" value="${esc(s.publish_time)}" onchange="updateSeries('${s.id}',{publish_time:this.value})">
+          </div>
+        <div class="status-line" style="font-size:16px">${s.active ? 'Ativa' : 'Pausada'}<button class="sw ${s.active ? 'on' : ''}" onclick="toggleSeries('${s.id}', ${!s.active})"></button></div>
+      </div>
+      <details><summary>Configuração da série</summary><div class="box">${esc(s.niche)}</div>${s.example ? `<div class="box">${esc(s.example)}</div>` : ''}
+        <div class="meta" style="margin-top:12px"><span>${ic('mic')}${esc(s.voice_name || s.voice)}</span><span>${ic('type')}${esc((S.config.caption_styles.find(c => c.id === s.caption_style) || {}).name || s.caption_style)}</span><span>${ic('music')}${s.music.length ? s.music.length + ' música(s)' : 'Sem música'}</span><span>${ic('film')}${s.effects.motion === 'video' ? 'Movimento por vídeo' : 'Movimento na imagem'}</span>${s.effects.hook && s.effects.motion !== 'video' ? `<span>${ic('zap')}Gancho animado</span>` : ''}${s.effects.glitch ? `<span>${ic('zap')}Glitch</span>` : ''}</div></details>
+    </div>
+    ${(s.cast || []).length ? `<div class="card" style="padding:20px;margin-bottom:28px"><div class="inline" style="justify-content:space-between;margin-bottom:6px"><h2 style="font-size:20px;margin:0">Elenco fixo</h2><button class="btn sm ghost" onclick="saveCast('${s.id}')">${ic('check')}Salvar elenco</button></div>
+      <p class="muted" style="margin:0 0 16px;font-size:14px">Esses personagens aparecem sempre com essa aparência. Se mudar a descrição, a ficha (imagem de referência) é refeita no próximo vídeo.</p>
+      <div class="castgrid">${s.cast.map((c, i) => `<div class="castc">${c.sheet ? `<img src="${esc(c.sheet)}" alt="">` : `<div class="noimg">${ic('image')}</div>`}<div style="flex:1;min-width:0"><input class="input" style="height:40px;font-size:15px;margin-bottom:8px" data-cn="${i}" value="${esc(c.name)}"><textarea class="textarea" rows="3" style="font-size:13px" data-cl="${i}">${esc(c.look)}</textarea><button class="ed" style="color:var(--err);font-size:13px;margin-top:4px" onclick="this.closest('.castc').remove()">Remover</button></div></div>`).join('')}</div></div>` : ''}
+    <h2 style="font-size:22px;margin:0 0 16px">Vídeos</h2><div id="vlist"></div></div>`;
+  await drawVideos(id);
+  pollTimer = setInterval(() => drawVideos(id), 3500);
+}
+async function saveCast(id) {
+  const cast = [...document.querySelectorAll('.castc')].map(el => ({name:el.querySelector('[data-cn]').value, look:el.querySelector('[data-cl]').value}));
+  try { await api(`/api/series/${id}/cast`, {json:{cast}}); toast('Elenco salvo.'); route(); } catch (e) { toast(e.message); }
+}
+async function updateSeries(id, data) {
+  try { await api('/api/series/' + id, {json:data}); toast('Série atualizada.'); route(); } catch (e) { toast(e.message); }
+}
+
+/* ------------------------------------------------------------------ vídeos */
+async function viewVideos() {
+  renderNav('videos'); crumb([['Vídeos']]);
+  $('#view').innerHTML = `<div class="wide"><div class="pagehead"><h1>Vídeos</h1></div><div id="vlist"></div></div>`;
+  await drawVideos(null);
+  pollTimer = setInterval(() => drawVideos(null), 3500);
+}
+async function drawVideos(seriesId) {
+  const el = $('#vlist'); if (!el) return;
+  try { S.videos = await api('/api/videos' + (seriesId ? '?series=' + seriesId : '')); } catch (e) { el.innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+  if (!S.videos.length) { el.innerHTML = `<div class="empty">${ic('film')}<h3>Nenhum vídeo ainda</h3><p>Seus vídeos aparecem aqui assim que forem criados.</p></div>`; return; }
+  el.innerHTML = `<div class="vgrid">${S.videos.map(videoCard).join('')}</div>`;
+  if ($('.modal') && $('.modal').dataset.id) { const v = S.videos.find(x => x.id === $('.modal').dataset.id); if (v) updateModal(v); }
+}
+function isRunning(v) { return !['done','error','cancelled','review','paused'].includes(v.status); }
+function videoCard(v) {
+  const run = isRunning(v);
+  const cls = v.status === 'done' ? 'done' : v.status === 'error' ? 'error' : v.status === 'cancelled' ? 'cancelled' : v.status === 'paused' ? 'paused' : v.status === 'review' ? 'rev' : 'run';
+  const label = v.status === 'queued' && v.queue_position ? `Na fila · ${v.queue_position}º` : v.step_label;
+  return `<div class="vcard" onclick="openVideo('${v.id}')">
+    <div class="vthumb">${v.thumb ? `<img src="${esc(v.thumb)}" alt="" loading="lazy">` : ''}${run && !v.thumb ? '<div class="spin dark"></div>' : ''}
+      <span class="stt ${cls}">${esc(label)}</span>
+      ${run ? `<div class="ov">${esc(v.step_label)} · ${v.progress}%<div class="prog"><i style="width:${v.progress}%"></i></div></div>` : v.duration ? `<div class="ov">${icf('play').replace('class="i fill"', 'class="i fill" style="width:14px;height:14px;vertical-align:-2px"')} ${Math.round(v.duration)}s</div>` : ''}
+    </div>
+    <h4>${esc(v.title || 'Novo episódio')}</h4><small>${esc(v.series_name)} · ${esc(fmtDate(v.created))}</small></div>`;
+}
+function fmtDate(s) { if (!s) return ''; const [d, t] = s.split(' '); const [y, m, dd] = d.split('-'); return `${dd}/${m} ${t.slice(0, 5)}`; }
+function openVideo(id) {
+  const v = S.videos.find(x => x.id === id); if (!v) return;
+  if (isRunning(v)) { location.hash = '#/gerando/' + id; return; }
+  if (v.status === 'review') { location.hash = '#/revisar/' + id; return; }
+  if (v.status === 'paused') { location.hash = v.scenes && v.scenes.length ? '#/revisar/' + id : '#/gerando/' + id; return; }
+  const m = document.createElement('div'); m.className = 'modal'; m.dataset.id = id;
+  m.onclick = e => { if (e.target === m) closeModal(); };
+  document.body.appendChild(m); updateModal(v, true);
+}
+function closeModal() { const m = $('.modal'); if (m) m.remove(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+function updateModal(v, first) {
+  const m = $('.modal'); if (!m) return;
+  const sig = v.status + v.progress + (v.title || '');
+  if (!first && m.dataset.sig === sig) return;
+  const wasPlaying = m.querySelector('video');
+  if (!first && wasPlaying && v.status === 'done' && m.dataset.status === 'done') return;
+  m.dataset.sig = sig; m.dataset.status = v.status;
+  const run = isRunning(v);
+  const tags = (v.hashtags || []).join(' ');
+  const copyText = [v.title, v.description, tags].filter(Boolean).join('\n\n');
+  m.innerHTML = `<div class="mbox">
+    <div class="mplayer">${v.url ? `<video src="${esc(v.url)}" controls autoplay playsinline poster="${esc(v.thumb || '')}"></video>` : v.thumb ? `<img src="${esc(v.thumb)}" alt="">` : ''}${run ? '<div class="spin"></div>' : ''}</div>
+    <div class="minfo" style="position:relative">
+      <button class="close" onclick="closeModal()" aria-label="Fechar">${ic('x')}</button>
+      <h2>${esc(v.title || 'Novo episódio')}</h2>
+      <div class="muted" style="font-size:14px">${esc(v.series_name)} · criado ${esc(fmtDate(v.created))}${v.publish_at ? ' · publicar ' + esc(fmtDate(v.publish_at + ':00')) : ''}${v.duration ? ' · ' + Math.round(v.duration) + ' s' : ''}</div>
+      ${run ? `<div style="margin-top:16px"><b>${esc(v.step_label)}</b> · ${v.progress}%<div class="prog" style="background:var(--soft2);height:8px"><i style="width:${v.progress}%;background:var(--p)"></i></div></div>` : ''}
+      ${v.error ? `<div class="box" style="background:#fef2f2;color:#991b1b">${esc(v.error)}</div>` : ''}
+      ${v.description || tags ? `<div class="box">${esc(v.description)}${tags ? '\n\n' + esc(tags) : ''}</div>` : ''}
+      <div class="row-actions">
+        ${v.url ? `<a class="btn sm" href="${esc(v.url)}?download=1">${ic('download')}Baixar MP4</a>` : ''}
+        ${copyText ? `<button class="btn sm ghost" onclick='copyText(${JSON.stringify(copyText).replace(/'/g, "&#39;")})'>${ic('copy')}Copiar legenda</button>` : ''}
+        ${v.status==='review' ? '' : run ? `<button class="btn sm ghost" onclick="videoAction('${v.id}','cancel')">${ic('x')}Cancelar</button>` : `<button class="btn sm ghost" onclick="videoAction('${v.id}','retry')">${ic('refresh')}${v.status === 'done' ? 'Gerar de novo' : 'Tentar novamente'}</button>`}
+        <button class="btn sm danger" onclick="videoAction('${v.id}','delete')">${ic('trash')}Excluir</button>
+      </div>
+      ${v.narrative && v.status !== 'done' ? narrativePanel(v) : ''}
+      ${v.scenes && v.scenes.length ? `<details ${run ? '' : 'open'}><summary>Roteiro (${v.scenes.length} cenas)</summary><div class="scenes">${v.scenes.map((s, i) => `<div class="scene"><b>${i + 1}.</b> ${esc(s.narration)}</div>`).join('')}</div></details>` : ''}
+    </div></div>`;
+}
+
+/* ------------------------------------------------------------------ revisão do roteiro (página própria) */
+const CHECK_LABELS = {hook:'Gancho nos primeiros segundos', continuity:'Continuidade entre as cenas', motivation:'Motivação dos personagens',
+  clues:'Pistas plantadas antes da revelação', contradictions:'Sem contradições', resolution:'Conflito resolvido de verdade',
+  ending:'Final completo (não para no meio)', natural_language:'Linguagem natural no idioma certo', read_aloud:'Bom de ouvir (tamanho e ritmo)',
+  visual_feasibility:'Cenas possíveis de desenhar'};
+const PROFILE_WPM = {horror:115, suspense:128, mystery:132, emotional:128};
+const words = t => (String(t || '').trim().match(/\S+/g) || []).length;
+const fmtS = s => s >= 60 ? `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')} min` : `${Math.round(s)} s`;
+async function viewReview(id) {
+  renderNav('videos'); crumb([['Vídeos','#/videos'],['Revisão do roteiro']]);
+  $('#view').innerHTML = `<div class="rvw" id="rvw"><div class="muted">Carregando...</div></div>`;
+  S.rv = {id, dirty:false, sig:''};
+  const load = async (force) => {
+    let v; try { v = await api('/api/videos/' + id); } catch (e) { $('#rvw').innerHTML = `<div class="empty">${esc(e.message)}</div>`; clearInterval(pollTimer); return; }
+    if (!$('#rvw')) return;
+    if (v.status === 'done' || ['images','motion','music','render','queued'].includes(v.status) && S.rv.approved) { clearInterval(pollTimer); location.hash = '#/gerando/' + id; return; }
+    const sig = [v.status, v.progress, JSON.stringify(v.narrative && v.narrative.review && v.narrative.review.history || []).length, v.audio_url].join('|');
+    if (!force && (sig === S.rv.sig || S.rv.dirty)) { if (S.rv.dirty) busyLine(v); return; }
+    S.rv.sig = sig; S.rv.v = v; drawReview(v);
+  };
+  await load(true);
+  pollTimer = setInterval(() => load(false), 3000);
+}
+function busyLine(v) {
+  const b = $('#rv-busy'); if (!b) return;
+    const busy = !['review','done','error','cancelled','paused'].includes(v.status);
+  b.style.display = busy ? '' : 'none';
+  if (busy) b.querySelector('span').textContent = (v.step_label || 'Processando') + '...';
+}
+function drawReview(v) {
+  const n = v.narrative || {}, r = n.review || {}, plan = n.plan || {}, nc = v.narration_config || {}, ct = v.cta || {};
+  const scenes = (v.scenes || []).filter(s => !s.cta);
+  const busy = !['review','done','error','cancelled','paused'].includes(v.status);
+  const issues = r.issues || [];
+  const crit = issues.filter(i => i.severity === 'critical').length, warn = issues.length - crit;
+  const genre = nc.narration_profile || plan.genre || 'emotional';
+  const wpm = PROFILE_WPM[genre] || 125;
+  const total = scenes.reduce((a, s) => a + words(s.narration), 0);
+  const est = total / wpm * 60;
+  const target = v.target_seconds || 0;
+  const editable = ['review','error','cancelled','done','paused'].includes(v.status) && !busy;
+  const checks = r.checks || {};
+  const status = r.approved ? `<span class="chip2 ok">${ic('check')}História aprovada na verificação</span>` : (crit ? `<span class="chip2 bad">${ic('x')}${crit} problema${crit > 1 ? 's' : ''} crítico${crit > 1 ? 's' : ''}</span>` : `<span class="chip2 warn">${ic('info')}Verificação pendente</span>`);
+  $('#rvw').innerHTML = `
+  <div class="rvw-head"><div><a href="#/videos" class="muted" style="font-size:14px;text-decoration:none">← Vídeos</a><h1>${esc(v.title || 'Novo episódio')}</h1>
+    <div class="chipline">${status}${warn ? `<span class="chip2 warn">${warn} aviso${warn > 1 ? 's' : ''}</span>` : ''}<span class="chip2">${ic('film')}${scenes.length} cenas</span><span class="chip2">${ic('clock')}≈ ${fmtS(est)} de fala${target ? ' · meta ' + fmtS(target) : ''}</span><span class="chip2">${esc(v.series_name)}</span></div></div>
+    <button class="btn sm danger" onclick="videoAction('${v.id}','delete').then(()=>location.hash='#/videos')">${ic('trash')}Descartar</button></div>
+  ${v.status === 'paused' ? '<div class="note" style="margin-bottom:18px">Geração pausada. Edite a narração e gere o áudio novamente, se precisar; depois clique em <b>Aprovar e produzir</b> para continuar. Imagens e movimentos já concluídos serão reaproveitados.</div>' : ''}
+  <div class="busy" id="rv-busy" style="${busy ? '' : 'display:none'}"><div class="spin dark"></div><span>${esc(v.step_label || 'Processando')}...</span></div>
+  ${v.error ? `<div class="issue critical" style="margin:0 0 18px"><b>Ocorreu um erro</b>${esc(v.error)}</div>` : ''}
+  <div class="rvw-grid">
+   <div>
+    <div class="card rsec"><h3>${ic('type')}Roteiro</h3><p class="sub">Este é exatamente o texto que será narrado, cena por cena. Edite o que quiser e clique em <b>Salvar e verificar de novo</b> — a IA confere a história outra vez e refaz os prompts das imagens.</p>
+     <div id="rv-scenes">${scenes.map((s, i) => { const w = words(s.narration); return `<div class="scard3" data-i="${i}"><div class="shead"><b>Cena ${i + 1}</b><span class="wc ${w > 40 ? 'long' : ''}">${w} palavras · ≈ ${Math.round(w / wpm * 60)} s</span></div>
+       <textarea class="rv-text" ${editable ? '' : 'disabled'} rows="1">${esc(s.narration)}</textarea>
+       <div class="meta2">${s.emotion ? `<span>Emoção: ${esc(s.emotion)}</span>` : ''}${(s.characters || []).length ? `<span>${esc(s.characters.join(', '))}</span>` : ''}${s.environment ? `<span>${esc(s.environment)}</span>` : ''}</div></div>`; }).join('')}</div>
+     <div class="savebar"><span class="muted" id="rv-dirty" style="font-size:14px">Nenhuma alteração.</span><button class="btn sm" id="rv-save" disabled onclick="reviewAction('${v.id}','review')">${ic('refresh')}Salvar e verificar de novo</button></div>
+    </div>
+    <div class="card rsec" style="margin-top:18px"><h3>${ic('book')}Resumo da história</h3>
+     <p style="margin:8px 0 12px;line-height:1.55">${esc(n.summary || '—')}</p>
+     ${plan.revelation ? `<div style="font-size:14px;margin-bottom:6px"><b>Revelação:</b> ${esc(plan.revelation)}</div>` : ''}
+     ${plan.ending ? `<div style="font-size:14px;margin-bottom:6px"><b>Desfecho:</b> ${esc(plan.ending)}</div>` : ''}
+     ${plan.final_emotion ? `<div style="font-size:14px"><b>Emoção final:</b> ${esc(plan.final_emotion)}</div>` : ''}</div>
+    ${(r.history || []).length ? `<details class="card rsec" style="margin-top:18px"><summary style="margin:0">Histórico das verificações (${r.history.length})</summary><div class="hist">${r.history.map(h => `<div class="h"><b>Tentativa ${h.attempt}: ${h.approved ? 'aprovada' : 'reprovada'}</b>${(h.issues || []).map(i => `<div>• ${esc(i.problem)}</div>`).join('')}${(h.corrections || []).length ? `<div style="color:#166534;margin-top:4px">Corrigido automaticamente: ${h.corrections.map(esc).join('; ')}</div>` : ''}</div>`).join('')}</div></details>` : ''}
+   </div>
+   <div class="rvw-side">
+    <div class="card rsec"><h3>${ic('check')}Verificação da história</h3><p class="sub">A IA confere a história lendo só o texto falado, e o programa faz verificações automáticas (idioma, tamanho, cenas, final).</p>
+     ${issues.map(i => `<div class="issue ${i.severity === 'critical' ? 'critical' : 'warning'}"><b>${i.severity === 'critical' ? 'Crítico' : 'Aviso'}: ${esc(i.problem)}</b>${i.evidence ? `<div class="ev">“${esc(String(i.evidence).slice(0, 300))}”</div>` : ''}${i.correction ? `<div class="fix">Como corrigir: ${esc(i.correction)}</div>` : ''}</div>`).join('')}
+     ${Object.keys(checks).length ? `<div class="checklist" style="margin-top:12px">${Object.keys(CHECK_LABELS).filter(k => checks[k]).map(k => { const c = checks[k]; return `<div class="ck ${c.passed ? 'pass' : 'fail'}"><span class="ic2">${ic(c.passed ? 'check' : 'x')}</span><details><summary>${CHECK_LABELS[k]}</summary><p>${esc(c.evidence || '')}</p></details></div>`; }).join('')}</div>` : ''}
+    </div>
+    <div class="card rsec"><h3>${ic('mic')}Narração</h3>
+     <div class="field"><div class="label">Ritmo da leitura</div><select class="select" id="n-profile"><option value="">Automático pelo gênero da história</option>${[['horror','Terror · mais lento e tenso'],['suspense','Suspense'],['mystery','Mistério'],['emotional','Emocional']].map(([k, t]) => `<option value="${k}" ${nc.narration_profile === k && nc.narration_profile !== plan.genre ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+     <div class="swline"><span>Ajustar velocidade manualmente</span><button class="sw ${nc.manual_speed ? 'on' : ''}" id="n-manual-sw" onclick="this.classList.toggle('on');document.getElementById('n-speed').disabled=!this.classList.contains('on')"></button></div>
+     <div class="slider"><input type="range" id="n-speed" min="0.7" max="1.3" step="0.05" value="${nc.speed || 1}" ${nc.manual_speed ? '' : 'disabled'} oninput="this.nextElementSibling.value=this.value+'x'"><output>${nc.speed || 1}x</output></div>
+     <div class="label">Pausas entre as frases</div>
+     <div class="slider"><input type="range" id="n-pauses" min="0" max="2" step="0.1" value="${nc.pause_intensity ?? 1}" oninput="this.nextElementSibling.value=({0:'sem',1:'normais',2:'longas'})[Math.round(this.value)] || (this.value<1?'curtas':'maiores')"><output>${(nc.pause_intensity ?? 1) == 1 ? 'normais' : (nc.pause_intensity ?? 1) < 1 ? 'curtas' : 'maiores'}</output></div>
+     <div class="label" style="font-size:14px">Amostra da voz</div><audio controls preload="none" src="${esc(v.voice_preview_url)}"></audio>
+     ${v.audio_url ? `<div class="label" style="font-size:14px;margin-top:12px">Narração do roteiro</div><audio controls preload="metadata" src="${esc(v.audio_url)}"></audio><div class="muted" style="font-size:13px;margin-top:4px">${n.timing && n.timing.duration ? fmtS(n.timing.duration) : ''}${n.timing && n.timing.wpm ? ' · ' + n.timing.wpm + ' palavras/min' : ''}</div>${n.timing && n.timing.warning ? `<div class="issue warning">${esc(n.timing.warning)}</div>` : ''}` : ''}
+     <button class="btn sm ghost" style="margin-top:12px;width:100%" ${editable ? '' : 'disabled'} onclick="reviewAction('${v.id}','narrate')">${ic('mic')}${v.audio_url ? 'Gravar a narração de novo' : 'Ouvir a narração completa antes de aprovar'}</button>
+    </div>
+    <div class="card rsec"><h3>${ic('zap')}Chamada final</h3>
+     <div class="swline"><span>Adicionar chamada no final do vídeo</span><button class="sw ${ct.enabled ? 'on' : ''}" id="n-cta-sw" onclick="this.classList.toggle('on');document.getElementById('cta-fields').style.display=this.classList.contains('on')?'':'none'"></button></div>
+     <div id="cta-fields" style="${ct.enabled ? '' : 'display:none'}">
+      <div class="field"><div class="label">Nome do canal</div><input class="input" id="n-channel" value="${esc(ct.channel || '')}" placeholder="Ex.: Família Sem Filtro"></div>
+      <div class="field"><div class="label">Texto</div><input class="input" id="n-cta-text" value="${esc(ct.text || '')}" placeholder="Siga {channel} para a próxima história!"><div class="help"><span>{channel} vira o nome do canal.</span></div></div>
+      <div class="swline"><span>Narrar a chamada com a voz do vídeo</span><button class="sw ${ct.narrated ? 'on' : ''}" id="n-cta-voice" type="button" role="switch" aria-checked="${ct.narrated ? 'true' : 'false'}" aria-label="Narrar a chamada com a voz do vídeo" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))"></button></div>
+      <div class="label">Pausa antes da chamada</div><div class="slider"><input type="range" id="n-gap" min="0" max="3" step="0.1" value="${ct.gap ?? 1}" oninput="this.nextElementSibling.value=this.value+' s'"><output>${ct.gap ?? 1} s</output></div>
+     </div>
+    </div>
+    <div class="card rsec approve-box ${r.approved ? '' : 'blocked'}">
+     ${r.approved ? `<h3>${ic('check')}Tudo certo para produzir</h3><p class="sub">Depois de aprovar, o vídeo é gerado: imagens, movimento, trilha e montagem.</p>` :
+       `<h3 style="color:#92400e">${ic('info')}A verificação encontrou problemas</h3><p class="sub">O ideal é corrigir o texto ao lado e verificar de novo. Se mesmo assim quiser seguir, marque a opção abaixo.</p><label class="checkline" style="margin:0 0 14px;font-size:14px"><input type="checkbox" id="n-override" onchange="document.getElementById('rv-approve').disabled=!this.checked">Entendi os problemas e quero produzir assim mesmo</label>`}
+     <button class="btn" id="rv-approve" style="width:100%" ${editable && r.approved ? '' : 'disabled'} onclick="reviewAction('${v.id}','approve')">${ic('check')}Aprovar e produzir</button>
+    </div>
+   </div>
+  </div>`;
+  document.querySelectorAll('.rv-text').forEach((t, i) => {
+    const grow = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; };
+    grow();
+    t.addEventListener('input', () => {
+      grow();
+      const card = t.closest('.scard3'), w = words(t.value);
+      card.classList.toggle('edited', t.value !== scenes[i].narration);
+      const wc = card.querySelector('.wc'); wc.textContent = `${w} palavras · ≈ ${Math.round(w / wpm * 60)} s`; wc.classList.toggle('long', w > 40);
+      const changed = [...document.querySelectorAll('.rv-text')].filter((x, j) => x.value !== scenes[j].narration).length;
+      S.rv.dirty = changed > 0;
+      $('#rv-dirty').textContent = changed ? `${changed} cena${changed > 1 ? 's' : ''} alterada${changed > 1 ? 's' : ''} — salve para verificar de novo.` : 'Nenhuma alteração.';
+      $('#rv-save').disabled = !changed;
+      const ap = $('#rv-approve'); if (ap && changed) ap.disabled = true;
+    });
+  });
+}
+async function reviewAction(id, action) {
+  const val = k => document.getElementById(k)?.value;
+  const on = k => !!document.getElementById(k)?.classList.contains('on');
+  const narr = {profile:val('n-profile'), manual_speed:on('n-manual-sw'), speed:Number(val('n-speed')), pause_intensity:Number(val('n-pauses'))};
+  let json;
+  if (action === 'review') {
+    const texts = [...document.querySelectorAll('.rv-text')].map(e => e.value.trim());
+    if (texts.some(t => !t)) return toast('Nenhuma cena pode ficar vazia.');
+    json = {texts};
+  } else if (action === 'narrate') json = narr;
+  else json = Object.assign(narr, {override_critical:!!document.getElementById('n-override')?.checked, cta_enabled:on('n-cta-sw'), cta_text:val('n-cta-text') || '', channel:val('n-channel') || '', cta_narrated:on('n-cta-voice'), cta_gap:Number(val('n-gap') || 1)});
+  if (action === 'approve' && json.cta_enabled && !json.cta_text.trim()) json.cta_text = 'Siga {channel} para a próxima história!';
+  try {
+    await api(`/api/videos/${id}/${action}`, {json});
+    if (action === 'approve') { S.rv.approved = true; location.hash = '#/gerando/' + id; return; }
+    S.rv.dirty = false; S.rv.sig = '';
+    toast(action === 'review' ? 'Salvo. A IA está verificando a história de novo...' : 'Gravando a narração...');
+  } catch (e) { toast(e.message); }
+}
+function narrativePanel(v) {
+ const n=v.narrative, r=n.review||{}, plan=n.plan||{}, nc=v.narration_config||{}, ct=v.cta||{};
+ return `<details open><summary>Revisão do roteiro · ${r.approved ? 'Coerência validada' : 'Problemas pendentes'}</summary>
+ <div class="box">${esc(n.summary||'')}<br><b>Revelação:</b> ${esc(plan.revelation||'')}<br><b>Desfecho:</b> ${esc(plan.ending||'')}<br>${n.estimated_duration||'?'} s estimados · ${v.scenes.length} cenas</div>
+ ${(r.issues||[]).map(i=>`<div class="box">${esc(i.severity)}: ${esc(i.problem)}<br>${esc(i.evidence)}<br>Correção: ${esc(i.correction)}</div>`).join('')}
+ <details><summary>Histórico de revisão e correções</summary><pre style="white-space:pre-wrap">${esc(JSON.stringify(r.history||[],null,2))}</pre></details>
+ ${['review','done','error','cancelled','paused'].includes(v.status) ? `<div id="narrative-edit">${v.scenes.filter(s=>!s.cta).map((s,i)=>`<label>Cena ${i+1}<textarea class="input narrative-text" rows="3">${esc(s.narration)}</textarea></label>`).join('')}</div>
+ <button class="btn sm ghost" onclick="narrativeAction('${v.id}','review')">Salvar e revisar novamente</button>
+ <div class="field"><label>Perfil de narração</label><select class="select" id="n-profile"><option value="">Automático por gênero</option><option value="horror" ${nc.narration_profile==='horror' ? 'selected' : ''}>Terror · 105–125 ppm</option><option value="suspense" ${nc.narration_profile==='suspense' ? 'selected' : ''}>Suspense · 115–140 ppm</option><option value="mystery" ${nc.narration_profile==='mystery' ? 'selected' : ''}>Mistério · 120–145 ppm</option><option value="emotional" ${nc.narration_profile==='emotional' ? 'selected' : ''}>Emocional · 115–140 ppm</option></select></div>
+ <label><input type="checkbox" id="n-manual" ${nc.manual_speed ? 'checked' : ''}> Velocidade manual</label><input class="input" id="n-speed" type="number" min="0.5" max="2" step="0.05" value="${nc.speed||1}">
+ <label>Intensidade das pausas<input class="input" id="n-pauses" type="number" min="0" max="3" step="0.1" value="${nc.pause_intensity??1}"></label>
+ <button class="btn sm ghost" onclick="narrativeAction('${v.id}','narrate')">Gerar / regenerar somente narração</button>
+ <div class="box"><label><input type="checkbox" id="n-cta" ${ct.enabled ? 'checked' : ''}> Ativar CTA</label><input class="input" id="n-channel" value="${esc(ct.channel||'')}" placeholder="Nome do canal"><input class="input" id="n-cta-text" value="${esc(ct.text||'')}" placeholder="CTA personalizada; use {channel}"><label><input type="checkbox" id="n-cta-voice" ${ct.narrated ? 'checked' : ''}> Narrar CTA</label><label>Pausa antes da CTA (s)<input class="input" id="n-gap" type="number" value="${ct.gap??1}" min="0" max="5" step="0.1"></label></div>
+ ${!r.approved ? '<label><input type="checkbox" id="n-override"> Autorizar produção mesmo com erros narrativos pendentes</label>' : ''}
+ <button class="btn" onclick="narrativeAction('${v.id}','approve')">Aprovar e produzir</button>` : ''}
+ <label>Prévia da voz</label><audio controls preload="none" src="${esc(v.voice_preview_url)}" style="width:100%"></audio>
+ ${v.audio_url ? `<label>Narração completa</label><audio controls preload="metadata" src="${esc(v.audio_url)}" style="width:100%"></audio><div>${n.timing?.duration?.toFixed(1)||'?'} s reais · ${n.timing?.wpm||'?'} palavras/minuto</div>${n.timing?.style_supported===false ? '<div class="muted">Neste motor, a direção usa pausas e ritmo; interpretação emocional não é garantida.</div>' : ''}${n.timing?.warning ? `<div class="box">${esc(n.timing.warning)}</div>` : ''}` : ''}</details>`;
+}
+async function narrativeAction(id,action) {
+ const value=id=>document.getElementById(id)?.value;
+ const checked=id=>!!document.getElementById(id)?.checked;
+ const json=action==='review'?{texts:[...document.querySelectorAll('.narrative-text')].map(e=>e.value)}:
+ action==='narrate'?{profile:value('n-profile'),manual_speed:checked('n-manual'),speed:Number(value('n-speed')),pause_intensity:Number(value('n-pauses'))}:
+ {profile:value('n-profile'),manual_speed:checked('n-manual'),speed:Number(value('n-speed')),pause_intensity:Number(value('n-pauses')),override_critical:checked('n-override'),cta_enabled:checked('n-cta'),cta_text:value('n-cta-text'),channel:value('n-channel'),cta_narrated:checked('n-cta-voice'),cta_gap:Number(value('n-gap'))};
+ try {await api(`/api/videos/${id}/${action}`,{json}); closeModal(); toast('Solicitação salva. Acompanhe o vídeo.'); route();} catch(e){toast(e.message);}
+}
+async function videoAction(id, action) {
+  if (action === 'delete' && !confirm('Excluir este vídeo?')) return;
+  if (action === 'retry') {
+    const v = S.videos.find(x => x.id === id);
+    if (v && v.status === 'done' && !confirm('Gerar este vídeo de novo?')) return;
+  }
+  try { await api(`/api/videos/${id}/${action}`, {json:{}}); if (action === 'delete') closeModal(); toast({retry:'Voltou para a fila.', cancel:'Cancelando...', pause:'Pausa solicitada. O vídeo para ao concluir a etapa atual.', delete:'Vídeo excluído.'}[action]); drawVideos(location.hash.includes('/series/') ? location.hash.split('/')[2] : null); } catch (e) { toast(e.message); }
+}
+function copyText(t) { navigator.clipboard.writeText(t).then(() => toast('Copiado!'), () => toast('Não foi possível copiar.')); }
+
+/* ------------------------------------------------------------------ wizard */
+function viewWizard() {
+  renderNav('series'); crumb([['Séries','#/series'],['Criar nova série']]);
+  S.step = Math.min(Math.max(S.step || 1, 1), 8);
+  drawWizard();
+}
+function drawWizard() {
+  const st = S.step;
+  const bars = Array.from({length:8}, (_, i) => `<span class="${i < st ? 'on' : ''}"></span>`).join('');
+  const title = S.episodeMode && st === 8 ? 'Confirmar novo vídeo' : STEP_TITLES[st - 1];
+  const sub = S.episodeMode && st === 8 ? `As opções escolhidas valem só para este vídeo da série “${esc(S.episodeMode.name)}”.` : STEP_SUBS[st - 1];
+  $('#view').innerHTML = `<div class="narrow">
+    <div class="bars">${bars}</div>
+    <div class="wtitle"><h2>${title}</h2><span class="badge">Etapa ${st} de 8</span>${OPTIONAL[st] ? '<span class="badge blue">Opcional</span>' : ''}</div>
+    <div class="wsub">${sub}</div>
+    <div id="stepBody">${stepBody(st)}</div>
+    <div class="err" id="stepErr" style="margin-top:14px"></div>
+    <div class="wfoot">${S.episodeMode ? `<button class="btn ghost" onclick="cancelEpisodeSetup()">Cancelar</button>` : st > 1 ? `<button class="btn ghost" onclick="goStep(-1)">${ic('left')}Voltar</button>` : '<span></span>'}
+      ${S.episodeMode && st > 1 ? `<button class="btn ghost" onclick="goStep(-1)">${ic('left')}Voltar</button>` : ''}
+      <button class="btn" id="nextBtn" onclick="goStep(1)">${nextLabel()}${ic('right')}</button></div></div>`;
+  afterStep(st);
+}
+function nextLabel() {
+  if (S.step === 8) return S.episodeMode ? 'Gerar vídeo agora' : 'Criar série';
+  if (S.step === 3 && D.music_mode !== 'ai' && !D.music.length) return 'Pular';
+  return 'Continuar';
+}
+function setNext() { const b = $('#nextBtn'); if (b) b.innerHTML = nextLabel() + ic('right'); }
+function stepError(msg) { $('#stepErr').textContent = msg || ''; }
+async function goStep(dir) {
+  stepError('');
+  if (dir > 0) {
+    const err = validateStep(S.step);
+    if (err) return stepError(err);
+    if (S.step === 8) return S.episodeMode ? createEpisode() : createSeries();
+  }
+  S.audio.pause(); S.playing = null;
+  S.step = Math.min(8, Math.max(1, S.step + dir)); saveDraft();
+  drawWizard(); window.scrollTo({top:0, behavior:'smooth'});
+}
+function validateStep(st) {
+  if (st === 1 && D.niche.trim().length < 10) return S.nicheTab === 'presets' ? 'Escolha um nicho ou use a aba Personalizado.' : 'Descreva o nicho com pelo menos 10 caracteres.';
+  if (st === 2 && !D.voice) return 'Escolha uma voz para a narração.';
+  if (st === 8 && !D.name.trim()) return 'Dê um nome para a série.';
+  return '';
+}
+async function createSeries() {
+  const b = $('#nextBtn'); b.disabled = true; b.textContent = 'Criando...';
+  try {
+    const now = D.generate_now;
+    const s = await api('/api/series', {json:D});
+    store.del('hs_draft'); D = defaultDraft(); S.step = 1;
+    location.hash = s.first_video ? '#/gerando/' + s.first_video : '#/series/' + s.id;
+  } catch (e) { stepError(e.message); b.disabled = false; b.innerHTML = nextLabel() + ic('right'); }
+}
+async function createEpisode() {
+  const b = $('#nextBtn'); b.disabled = true; b.textContent = 'Enviando para geração...';
+  try {
+    const id = S.episodeMode.id;
+    const keys = ['niche_preset','niche','example','language','voice','voice_name','voice_provider','speed','music','music_volume',
+      'art_style','caption_style','effects','platforms','duration','music_mode','story_mode'];
+    const overrides = Object.fromEntries(keys.map(k => [k, D[k]]));
+    const v = await api(`/api/series/${id}/generate`, {json:{overrides}});
+    S.episodeMode = null; D = S.seriesDraft || defaultDraft(); S.seriesDraft = null; S.step = 1;
+    location.hash = '#/gerando/' + v.id;
+  } catch (e) { stepError(e.message); b.disabled = false; b.innerHTML = nextLabel() + ic('right'); }
+}
+
+function stepBody(st) {
+  if (st === 1) {
+    const tabs = `<div class="tabs"><button class="tab ${S.nicheTab === 'presets' ? 'on' : ''}" onclick="S.nicheTab='presets';drawWizard()">${ic('layers')}Modelos</button><button class="tab ${S.nicheTab === 'custom' ? 'on' : ''}" onclick="S.nicheTab='custom';drawWizard()">${ic('brush')}Personalizado</button></div>`;
+    if (S.nicheTab === 'presets') return tabs + `<div class="presets">${PRESETS.map(p => `<button class="preset ${D.niche_preset === p.id ? 'on' : ''}" onclick="pickPreset('${p.id}')"><b>${esc(p.name)}</b><span>${esc(p.desc)}</span></button>`).join('')}</div>`;
+    return tabs + `<div class="field"><div class="label">Nicho</div><textarea class="textarea" id="niche" rows="6" maxlength="5000">${esc(D.niche)}</textarea><div class="help"><span>Descreva seu tema</span><span id="nicheCount">${D.niche.length}/5000</span></div></div>
+      <div class="field"><div class="label">Roteiro de exemplo <span class="badge">Opcional</span></div><textarea class="textarea" id="example" rows="7" maxlength="2000">${esc(D.example)}</textarea><div class="help"><span>Define apenas o estilo de escrita. Os temas dos vídeos vêm do nicho acima</span><span id="exCount">${D.example.length}/2000</span></div></div>`;
+  }
+  if (st === 2) {
+    const langs = S.config.languages.map(l => `<option value="${l.id}" ${D.language === l.id ? 'selected' : ''}>${l.flag} · ${esc(l.name)}</option>`).join('');
+    return `<div class="field"><div class="label">Idioma</div><select class="select" onchange="D.language=this.value;saveDraft();S.audio.pause();S.playing=null;refreshPlayIcons()">${langs}</select></div>
+      <div class="label">Voz</div><div id="voiceArea"><div class="muted">Carregando vozes...</div></div>`;
+  }
+  if (st === 3) {
+    const mm = D.music_mode || 'ai';
+    const mcard = (k, t, b, d) => `<button class="mode ${mm === k ? 'on' : ''}" onclick="D.music_mode='${k}';saveDraft();drawWizard()"><div class="tt">${t} ${b}</div><p>${d}</p>${mm === k ? `<span class="check">${ic('check')}</span>` : ''}</button>`;
+    const modes = `<div class="modes" style="margin-bottom:26px">
+      ${mcard('ai', 'Compor uma trilha para cada vídeo', '<span class="badge new">RECOMENDADO</span>', 'Selecionada por padrão. A IA lê o roteiro completo e as cenas, cria uma música instrumental com o clima da história e ajusta a duração ao vídeo.')}
+      ${mcard('library', 'Escolher da biblioteca', '', 'Você escolhe as músicas; sorteamos uma para cada vídeo e repetimos com emenda suave se for curta.')}
+    </div>${mm === 'ai' ? '<div class="label" style="font-size:16px">Música reserva <span class="badge">Opcional</span></div><p class="muted" style="margin:-4px 0 16px;font-size:14px">Usada só se a composição pela IA falhar.</p>' : ''}`;
+    const tabs = modes + `<div class="tabs"><button class="tab ${S.musicTab === 'library' ? 'on' : ''}" onclick="S.musicTab='library';drawWizard()">${ic('layers')}Músicas prontas</button><button class="tab ${S.musicTab === 'upload' ? 'on' : ''}" onclick="S.musicTab='upload';drawWizard()">${ic('brush')}Personalizado</button><button class="tab ${S.musicTab === 'generate' ? 'on' : ''}" onclick="S.musicTab='generate';drawWizard()">${ic('music')}Criar com IA</button></div>`;
+    if (S.musicTab === 'generate') return tabs + musicGeneratorPanel(true);
+    if (S.musicTab === 'upload') return tabs + `<label class="drop" id="drop">${ic('upload')}<div style="margin-top:10px;font-size:17px;color:var(--ink)">Clique ou arraste suas músicas aqui</div><div style="margin-top:4px;font-size:14px">MP3, WAV, M4A ou OGG</div><input type="file" accept="audio/*" multiple hidden onchange="uploadMusic(this.files)"></label><div id="upMsg" class="muted" style="margin-top:12px"></div>`;
+    return tabs + `<input class="input" id="musicSearch" placeholder="Pesquisar por nome ou etiqueta (ex.: calma, suspense)" value="${esc(S.musicQ || '')}" oninput="S.musicQ=this.value;drawMusic(true)" style="margin-bottom:14px"><div id="musicArea"><div class="muted">Carregando...</div></div>`;
+  }
+  if (st === 4) {
+    return `<div class="styles">${S.config.art_styles.map((s, i) => {
+      const running = s.job === 'running';
+      return `<div class="style ${D.art_style === s.id ? 'on' : ''}"><div class="img" onclick="pickStyle('${s.id}')" style="cursor:pointer;${s.preview ? '' : 'background:' + STYLEGRAD[i % STYLEGRAD.length]}">
+        ${s.preview ? `<img src="${esc(s.preview)}" alt="${esc(s.name)}">` : running ? '<div class="spin"></div>' : ''}
+        ${D.art_style === s.id ? `<span class="sel"><span class="check">${ic('check')}</span></span>` : ''}</div><div class="nm">${esc(s.name)}</div></div>`;
+    }).join('')}</div>`;
+  }
+  if (st === 5) {
+    const pv = id => {
+      if (id === 'red_highlight') return '<span class="hl">HISTÓRIA</span><span>INCRÍVEL</span>';
+      if (id === 'karaoke') return '<span class="hl">HISTÓRIA</span><span>INCRÍVEL</span>';
+      if (['bold_stroke','beast','pixel'].includes(id)) return '<span>HISTÓRIA</span>';
+      if (id === 'elegant') return '<span>HISTÓRIA</span>';
+      if (id === 'clarity') return '<span>história</span>';
+      return '<span>HISTÓRIA</span><span>INCRÍVEL</span>';
+    };
+    return `<div class="caps">${S.config.caption_styles.map(c => `<button class="cap ${D.caption_style === c.id ? 'on' : ''}" onclick="D.caption_style='${c.id}';saveDraft();drawWizard()"><div class="pv cs-${c.id}">${pv(c.id)}</div><div class="cn">${esc(c.name)}</div>${D.caption_style === c.id ? `<span class="check">${ic('check')}</span>` : ''}</button>`).join('')}</div>`;
+  }
+  if (st === 6) {
+    const mode = D.effects.motion || 'image';
+    const opt = (k, title, badge, desc) => `<button class="mode ${mode === k ? 'on' : ''}" onclick="D.effects.motion='${k}';saveDraft();drawWizard()"><div class="tt">${title} ${badge}</div><p>${desc}</p>${mode === k ? `<span class="check">${ic('check')}</span>` : ''}</button>`;
+    const t = (key, title, badge, desc) => `<div class="tog"><div><div class="tt">${title} ${badge}</div><p>${desc}</p></div><button class="sw ${D.effects[key] ? 'on' : ''}" onclick="toggleFx('${key}')" aria-label="${title}"></button></div>`;
+    return `<div class="label">Tipo de movimento</div>
+      <div class="modes">
+      ${opt('image', 'Movimento na imagem', '<span class="badge new">RÁPIDO</span>', 'Zoom, câmera passeando e uma tremidinha suave sobre cada imagem. Dá a sensação de movimento e fica pronto em segundos.')}
+      ${opt('video', 'Movimento por vídeo', '<span class="badge prem">PREMIUM</span>', 'Cada cena vira um vídeo animado por IA. Fica mais vivo, mas leva alguns minutos por cena.')}
+      </div>
+      <div class="toggles" style="margin-top:26px">
+      ${t('glitch', 'Efeito glitch', '<span class="badge new">NOVO</span>', 'Aplica glitch no personagem com distorção cromática e tremida assustadora — perfeito para terror, suspense e conteúdo assustador.')}
+      ${mode === 'image' ? t('hook', 'Gancho animado', '<span class="badge prem">PREMIUM</span>', 'Gera um vídeo com movimento de 5 segundos na primeira cena para prender o espectador na hora.') : ''}
+      </div>`;
+  }
+  if (st === 7) {
+    const preset = PRESETS.find(x => x.id === D.niche_preset);
+    const style = S.config.art_styles.find(x => x.id === D.art_style) || {};
+    const cap = S.config.caption_styles.find(x => x.id === D.caption_style) || {};
+    const lang = S.config.languages.find(x => x.id === D.language) || {};
+    const fx = [D.effects.motion === 'video' ? 'Movimento por vídeo' : 'Movimento na imagem', D.effects.glitch ? 'Efeito glitch' : '', D.effects.motion !== 'video' && D.effects.hook ? 'Gancho animado' : ''].filter(Boolean).join(' · ');
+    const row = (k, v, step) => `<div class="rv"><span class="k">${k}</span><span class="val">${v}</span><button class="ed" onclick="S.step=${step};drawWizard()">Editar</button></div>`;
+    return `<div class="review">
+      ${row('Nicho', esc(preset ? preset.name : D.niche), 1)}
+      ${D.example ? row('Roteiro de exemplo', esc(D.example), 1) : ''}
+      ${row('Idioma', esc(lang.name || D.language), 2)}
+      ${row('Voz', esc(D.voice_name || D.voice), 2)}
+      ${row('Música de fundo', D.music_mode === 'ai' ? 'Criada pela IA a partir do roteiro de cada vídeo' + (D.music.length ? ' (reserva: ' + esc(D.music.length + ' música' + (D.music.length > 1 ? 's' : '')) + ')' : '') : D.music.length ? esc(D.music.map(m => m.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ')).join(', ')) : 'Nenhuma', 3)}
+      ${row('Estilo de arte', `<span class="rv-thumb">${style.preview ? `<img src="${esc(style.preview)}" alt="">` : '<i></i>'}${esc(style.name || '')}</span>`, 4)}
+      ${row('Estilo de legenda', esc(cap.name || ''), 5)}
+      ${row('Efeitos', fx, 6)}
+      ${S.episodeMode ? '' : row('Tipo de história', D.story_mode === 'continuous' ? 'História contínua' : 'Episódios independentes', 8)}
+    </div>`;
+  }
+  if (st === 8) {
+    if (S.episodeMode) return `<div class="note"><b>${esc(S.episodeMode.name)}</b><br>Revise as opções deste episódio antes de gerar. Elas não alteram a configuração salva da série nem os próximos vídeos agendados.</div>
+      <div class="field" style="margin-top:20px"><div class="label">Duração deste vídeo</div><select class="select" onchange="D.duration=this.value;saveDraft()">${S.config.durations.map(d => `<option value="${d.id}" ${D.duration === d.id ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}</select></div>
+      <div class="box" style="margin-top:18px">Movimento: <b>${D.effects.motion === 'video' ? 'vídeo animado em todas as cenas' : D.effects.hook ? 'gancho animado na primeira cena' : 'movimento nas imagens'}</b><br>Música: <b>${D.music_mode === 'ai' ? 'composição para este roteiro' : 'biblioteca escolhida'}</b></div>`;
+    const lead = (S.config.settings || {}).lead_hours ?? 6;
+    return `<div class="field"><div class="label">Nome da Série</div><input class="input" id="sname" maxlength="120" value="${esc(D.name)}"></div>
+      <div class="field"><div class="label">Duração do Vídeo <span title="Duração aproximada de cada vídeo" class="muted" style="display:flex">${ic('info')}</span></div><select class="select" onchange="D.duration=this.value;saveDraft()">${S.config.durations.map(d => `<option value="${d.id}" ${D.duration === d.id ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}</select></div>
+      <div class="field"><div class="label">Tipo de história</div><div class="modes">
+        ${[['independent','Episódios independentes','Cada vídeo é uma história completa e nova dentro do nicho.'],['continuous','História contínua','Cada vídeo continua o anterior, com o mesmo elenco de personagens, como uma novela.']].map(([k, t, d]) => `<button class="mode ${D.story_mode === k ? 'on' : ''}" onclick="D.story_mode='${k}';saveDraft();drawWizard()"><div class="tt">${t}</div><p>${d}</p>${D.story_mode === k ? `<span class="check">${ic('check')}</span>` : ''}</button>`).join('')}</div></div>
+      <div class="label" style="margin-bottom:6px">Agenda</div><div class="muted" style="font-size:17px;margin-bottom:22px">Defina quando você quer que seus vídeos sejam publicados.</div>
+      <div class="inline" style="margin-bottom:22px"><span style="font-size:18px;font-weight:500">Horário de publicação:</span><input class="input time" type="time" value="${esc(D.publish_time)}" onchange="D.publish_time=this.value;saveDraft()"><span class="muted">(Seu horário local)</span></div>
+      <div class="note"><b>Obs.:</b> Os vídeos serão gerados ${lead} horas antes do horário de publicação para você ter tempo de revisá-los.</div>`;
+  }
+  return '';
+}
+function afterStep(st) {
+  if (st === 1 && S.nicheTab === 'custom') {
+    $('#niche').oninput = e => { D.niche = e.target.value; D.niche_preset = ''; $('#nicheCount').textContent = D.niche.length + '/5000'; saveDraft(); };
+    $('#example').oninput = e => { D.example = e.target.value; $('#exCount').textContent = D.example.length + '/2000'; saveDraft(); };
+  }
+  if (st === 2) drawVoices();
+  if (st === 3 && S.musicTab === 'library') drawMusic();
+  if (st === 3 && S.musicTab === 'generate') initMusicGenerator();
+  if (st === 3 && S.musicTab === 'upload') {
+    const d = $('#drop');
+    ['dragenter','dragover'].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); d.classList.add('over'); }));
+    ['dragleave','drop'].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); d.classList.remove('over'); }));
+    d.addEventListener('drop', e => uploadMusic(e.dataTransfer.files));
+  }
+  if (st === 4) {
+    const sel = document.querySelector('.style.on'); if (sel) sel.scrollIntoView({block:'nearest', inline:'center'});
+    autoPreviews();
+  }
+  if (st === 8 && !D.story_mode) D.story_mode = 'independent';
+  if (st === 8 && !S.episodeMode) $('#sname').oninput = e => { D.name = e.target.value; saveDraft(); };
+}
+function pickPreset(id) {
+  const p = PRESETS.find(x => x.id === id);
+  D.niche_preset = id; D.niche = p.prompt;
+  if (!D.name) D.name = p.name;
+  saveDraft(); drawWizard();
+}
+function toggleFx(k) {
+  D.effects[k] = !D.effects[k];
+  saveDraft(); drawWizard();
+}
+function togglePlat(id) { D.platforms = D.platforms.includes(id) ? D.platforms.filter(x => x !== id) : D.platforms.concat(id); saveDraft(); drawWizard(); }
+function pickStyle(id) { D.art_style = id; saveDraft(); drawWizard(); }
+let previewsAsked = false;
+async function autoPreviews() {
+  // gera em segundo plano as miniaturas que ainda não existem (uma vez por sessão)
+  if (!previewsAsked && ((S.config.settings || {}).image_provider || 'comfyui') === 'comfyui') {
+    previewsAsked = true;
+    let asked = false;
+    for (const s of S.config.art_styles) if (!s.preview && !s.job) { try { await api(`/api/styles/${s.id}/preview`, {json:{}}); s.job = 'running'; asked = true; } catch (e) { break; } }
+    if (asked && S.step === 4 && location.hash.includes('/new')) { const sc = document.querySelector('.styles'); const x = sc ? sc.scrollLeft : 0; drawWizard(); const sc2 = document.querySelector('.styles'); if (sc2) sc2.scrollLeft = x; return; }
+  }
+  if (S.config.art_styles.some(s => s.job === 'running')) { clearInterval(pollTimer); pollTimer = setInterval(refreshStyles, 3000); }
+}
+async function genStylePreview(id) {
+  try { await api(`/api/styles/${id}/preview`, {json:{}}); const s = S.config.art_styles.find(x => x.id === id); s.job = 'running'; drawWizard(); clearInterval(pollTimer); pollTimer = setInterval(refreshStyles, 3000); } catch (e) { toast(e.message); }
+}
+async function refreshStyles() {
+  try {
+    const c = await api('/api/config'); const changed = JSON.stringify(c.art_styles) !== JSON.stringify(S.config.art_styles);
+    S.config = c;
+    if (!c.art_styles.some(s => s.job === 'running')) { clearInterval(pollTimer); pollTimer = null; }
+    if (changed && S.step === 4 && location.hash.includes('/new')) { const x = document.querySelector('.styles').scrollLeft; drawWizard(); document.querySelector('.styles').scrollLeft = x; }
+  } catch (e) {}
+}
+
+/* vozes */
+async function drawVoices() {
+  const el = $('#voiceArea'); if (!el) return;
+  if (!S.voices) {
+    try { S.voices = await api('/api/voices'); S.voicesErr = null; } catch (e) { S.voicesErr = e.message; }
+  }
+  if (S.voicesErr) { el.innerHTML = `<div class="empty" style="padding:28px"><b>Não foi possível carregar as vozes.</b><div style="margin:8px 0 14px;font-size:14px"></div><button class="btn sm" onclick="S.voices=null;drawVoices()">${ic('refresh')}Tentar de novo</button></div>`; return; }
+  const all = S.voices.filter(v => !v.language || String(v.language).toLowerCase().startsWith(D.language.slice(0, 2).toLowerCase()));
+  const list = all.length ? all : S.voices;
+  const males = list.filter(v => v.gender === 'male').length, females = list.filter(v => v.gender === 'female').length;
+  const hasG = males + females > 0;
+  const shown = list.filter(v => S.voiceFilter === 'all' || v.gender === S.voiceFilter);
+  const chips = hasG ? `<div class="chips">${[['all','Todas',list.length],['male','Masculinas',males],['female','Femininas',females]].map(([k, n, c]) => `<button class="chip ${S.voiceFilter === k ? 'on' : ''}" onclick="S.voiceFilter='${k}';drawVoices()">${n}<small>${c}</small></button>`).join('')}</div>` : '';
+  D.voice_provider = (S.config.settings || {}).voice_provider || 'voicestudio';
+  if ((!D.voice || !list.some(v => v.id === D.voice)) && list.length) { D.voice = list[0].id; D.voice_name = list[0].name; }
+  saveDraft();
+  el.innerHTML = chips + (shown.length ? `<div class="voices">${shown.map(v => {
+    const c = TAGCOLORS[hash(v.tag || v.name) % TAGCOLORS.length];
+    return `<div class="voice ${D.voice === v.id ? 'on' : ''}" role="button" tabindex="0" onclick="pickVoice(${esc(JSON.stringify(v.id))},${esc(JSON.stringify(v.name))})">
+      <button class="play" data-voice="${esc(v.id)}" onclick="event.stopPropagation();playVoice(${esc(JSON.stringify(v.id))})" aria-label="Ouvir">${icf(S.playing === 'v:' + v.id ? 'pause' : 'play')}</button>
+      <div style="min-width:0;padding-right:28px"><span class="vn">${esc(v.name)}</span>${v.tag ? `<span class="vtag" style="background:${c[0]};border-color:${c[1]};color:${c[2]}">${esc(v.tag)}</span>` : ''}</div>
+      ${D.voice === v.id ? `<span class="check">${ic('check')}</span>` : ''}</div>`;
+  }).join('')}</div>` : '<div class="empty">Nenhuma voz encontrada.</div>');
+}
+function pickVoice(id, name) { D.voice = id; D.voice_name = name; saveDraft(); drawVoices(); }
+async function playVoice(id) {
+  const key = 'v:' + id;
+  if (S.playing === key) { S.audio.pause(); S.playing = null; return refreshPlayIcons(); }
+  S.audio.pause(); S.playing = key; refreshPlayIcons();
+  const btn = document.querySelector(`.play[data-voice="${CSS.escape(id)}"]`);
+  if (btn) btn.innerHTML = '<div class="spin dark" style="position:static;width:20px;height:20px;border-width:2px"></div>';
+  S.audio.src = `/api/voice-preview?voice=${encodeURIComponent(id)}&lang=${encodeURIComponent(D.language)}&provider=${encodeURIComponent(D.voice_provider || '')}`;
+  try { await S.audio.play(); } catch (e) { if (S.playing === key) { S.playing = null; toast('Não foi possível tocar a amostra dessa voz.'); } }
+  refreshPlayIcons();
+}
+function refreshPlayIcons() {
+  document.querySelectorAll('.play[data-voice]').forEach(b => b.innerHTML = icf(S.playing === 'v:' + b.dataset.voice ? 'pause' : 'play'));
+  document.querySelectorAll('.sq[data-track]').forEach(b => b.innerHTML = icf(S.playing === 'm:' + b.dataset.track ? 'pause' : 'play'));
+}
+
+/* música */
+function musicMatch(m, q) {
+  q = (q || '').trim().toLowerCase(); if (!q) return true;
+  const hay = (m.name + ' ' + m.file + ' ' + (m.tags || []).join(' ')).toLowerCase();
+  return q.split(/\s+/).every(w => hay.includes(w));
+}
+async function drawMusic(cached) {
+  const el = $('#musicArea'); if (!el) return;
+  if (!cached || !S.music) { try { S.music = await api('/api/music'); } catch (e) { el.innerHTML = `<div class="err">${esc(e.message)}</div>`; return; } }
+  D.music = D.music.filter(f => S.music.some(m => m.file === f)); saveDraft(); setNext();
+  if (!S.music.length) { el.innerHTML = `<div class="empty">${ic('music')}<h3>Nenhuma música ainda</h3><p>Adicione suas músicas na aba Personalizado.</p><button class="btn sm ghost" style="margin-top:8px" onclick="S.musicTab='upload';drawWizard()">${ic('upload')}Adicionar músicas</button></div>`; return; }
+  const list = S.music.filter(m => musicMatch(m, S.musicQ));
+  if (!list.length) { el.innerHTML = '<div class="empty" style="padding:28px">Nenhuma música encontrada.</div>'; return; }
+  el.innerHTML = `<div class="tracks">${list.map((m, i) => `<div class="track ${D.music.includes(m.file) ? 'on' : ''}" onclick="toggleTrack(${esc(JSON.stringify(m.file))})">
+    <span class="swatch" style="background:${SWATCH[hash(m.file) % SWATCH.length]}"></span>
+    <div style="min-width:0"><div class="tn">${esc(m.name)}</div><div class="ts">${esc(m.desc || 'Sua música')}</div></div>
+    <button class="sq" data-track="${esc(m.file)}" onclick="event.stopPropagation();playTrack(${esc(JSON.stringify(m.file))})" aria-label="Ouvir">${icf(S.playing === 'm:' + m.file ? 'pause' : 'play')}</button></div>`).join('')}</div>`;
+}
+function toggleTrack(f) { D.music = D.music.includes(f) ? D.music.filter(x => x !== f) : D.music.concat(f); saveDraft(); drawMusic(); }
+function playTrack(f) {
+  const key = 'm:' + f;
+  if (S.playing === key) { S.audio.pause(); S.playing = null; return refreshPlayIcons(); }
+  S.audio.pause(); S.audio.src = '/media/music/' + encodeURIComponent(f); S.playing = key;
+  S.audio.play().catch(() => { S.playing = null; refreshPlayIcons(); }); refreshPlayIcons();
+}
+async function uploadMusic(files) {
+  const msg = $('#upMsg'); let ok = 0;
+  for (const f of files) {
+    msg.textContent = `Enviando ${f.name}...`;
+    try {
+      const r = await fetch('/api/music/upload', {method:'POST', headers:{'X-Filename':encodeURIComponent(f.name)}, body:f});
+      const j = await r.json(); if (!r.ok) throw new Error(j.error);
+      if (!D.music.includes(j.file)) D.music.push(j.file); ok++;
+    } catch (e) { toast(f.name + ': ' + e.message); }
+  }
+  saveDraft();
+  if (ok) { toast(`${ok} música(s) adicionada(s) e selecionada(s).`); S.musicTab = 'library'; drawWizard(); } else msg.textContent = '';
+}
+
+/* ------------------------------------------------------------------ guias e configurações */
+function viewGuides() {
+  renderNav('guides'); crumb([['Guias']]);
+  $('#view').innerHTML = `<div class="narrow"><div class="pagehead"><h1>Guias</h1></div>
+  <div class="card guide"><h3>Instale o que o projeto precisa</h3><p>Depois de baixar pelo Git, você não precisa instalar pacotes Python: o servidor usa a biblioteca padrão do Python. No Windows, instale:</p><ol>
+    <li><b>Git</b> para baixar e atualizar o código — <a href="https://git-scm.com/downloads" target="_blank" rel="noopener">baixar Git</a>.</li>
+    <li><b>Python 3.10 ou superior</b> — <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">baixar Python</a>. Marque “Add Python to PATH” durante a instalação.</li>
+    <li><b>FFmpeg</b> (inclui <code>ffmpeg</code> e <code>ffprobe</code>) para montar o vídeo, cortar áudio e medir duração — <a href="https://ffmpeg.org/download.html" target="_blank" rel="noopener">instruções oficiais</a>.</li>
+    <li><b>Edge ou Chrome</b> atualizado para abrir o estúdio.</li></ol>
+    <p>Na pasta do projeto, rode <code>powershell -ExecutionPolicy Bypass -File .\\instalar_windows.ps1</code> e depois <code>iniciar_windows.bat</code>. O verificador tenta instalar Python/FFmpeg com <code>winget</code>, quando necessário. Feche e reabra o terminal após uma instalação para atualizar o PATH.</p>
+    <p>O aplicativo abre em <a href="http://localhost:8787" target="_blank" rel="noopener">http://localhost:8787</a>.</p></div>
+  <div class="card guide"><h3>Escolha como gerar com IA</h3><p>Para criar um vídeo, configure um provedor de roteiro, um de voz e um de imagem em <b>Configurações → Provedores de IA</b>. Você pode usar serviços locais ou APIs na nuvem. Na configuração local padrão, instale e abra:</p><ul>
+    <li><b>Ollama + modelo de texto</b> para escrever roteiro. Instale pelo <a href="https://ollama.com/download" target="_blank" rel="noopener">site do Ollama</a> e baixe um modelo, por exemplo <code>ollama pull qwen3:8b</code>.</li>
+    <li><b>VoiceStudio</b> com mecanismo de voz ativo para narrar localmente, ou selecione ElevenLabs/Kie AI e informe sua chave de API.</li>
+    <li><b>ComfyUI</b> para imagens locais — <a href="https://www.comfy.org/download" target="_blank" rel="noopener">baixar ComfyUI</a> — com os modelos <code>z_image_turbo_bf16.safetensors</code>, <code>qwen_3_4b.safetensors</code> e <code>ae.safetensors</code>. Abra o ComfyUI antes de gerar.</li></ul>
+    <p>Se preferir provedores na nuvem para roteiro, voz e imagem, não precisa instalar Ollama, VoiceStudio nem os modelos de imagem no PC. Configure as chaves em <b>Provedores de IA</b>. Chamadas de API podem ter custo.</p></div>
+  <div class="card guide"><h3>Itens opcionais para movimento e música</h3><ul>
+    <li><b>Movimento na imagem</b> (zoom e câmera) não precisa de outro modelo de IA. Para animar cada cena como vídeo, escolha <b>Movimento por vídeo</b> e configure ComfyUI/LTX-2 localmente ou Kie AI na nuvem. O LTX-2 local requer GPU com bastante VRAM; os modelos podem ocupar dezenas de GB.</li>
+    <li><b>Trilha automática:</b> ACE-Step no ComfyUI e o modelo <code>ace_step_1.5_turbo_aio.safetensors</code>. Também dá para usar músicas enviadas/importadas na biblioteca.</li>
+    <li>Para movimento por ComfyUI, os modelos do workflow incluem <code>ltx-2-19b-dev-fp8.safetensors</code>, <code>ltx-2-19b-distilled-lora-384.safetensors</code> e <code>ltx-2-spatial-upscaler-x2-1.0.safetensors</code>. Abra o workflow no ComfyUI e instale pelo Manager qualquer nó ausente.</li></ul>
+    <p>Um PC sem GPU dedicada pode usar provedores na nuvem para as etapas de IA; FFmpeg continua necessário para montar o MP4.</p></div>
+  <div class="card guide"><h3>Como criar sua primeira série</h3><ol>
+    <li>Vá em <b>Séries</b> e clique em <b>Criar nova série</b>.</li>
+    <li>Escolha um nicho pronto ou descreva o seu.</li>
+    <li>Escolha idioma, voz, música, estilo de arte e legenda.</li>
+    <li>Defina o nome, a duração e o horário de publicação. A revisão das opções é um resumo; o roteiro não precisa de aprovação manual.</li>
+    <li>O estúdio cria e revisa o roteiro automaticamente, grava a narração e gera imagens, movimento e vídeo. Para a agenda diária funcionar, deixe o PC ligado com o servidor aberto.</li></ol></div>
+  <div class="card guide"><h3>Dicas para escolher um nicho</h3><ul>
+    <li>Seja específico: para quem é o canal e que emoção o vídeo deve causar.</li>
+    <li>Cite personagens e situações que se repetem — isso cria identidade.</li>
+    <li>Use o roteiro de exemplo para mostrar o jeito de escrever que você gosta.</li></ul></div>
+  <div class="card guide"><h3>Revisando e publicando</h3><ul>
+    <li>Depois de gerar o roteiro, a produção continua automaticamente; você não precisa clicar em “Aprovar e produzir”. A revisão do roteiro continua disponível se quiser conferir ou editar.</li>
+    <li>Os vídeos agendados são gerados algumas horas antes do horário escolhido, enquanto o PC e o servidor estão ligados.</li>
+    <li>Na aba <b>Vídeos</b> você assiste, baixa o MP4 e copia o título, a descrição e as hashtags.</li>
+    <li>Não gostou? Use <b>Gerar de novo</b>.</li></ul></div></div>`;
+}
+const GSTEPS = [['script','Roteiro','type'],['voice','Narração','mic'],['images','Imagens','image'],['motion','Movimento','film'],['music','Trilha','music'],['render','Montagem','zap']];
+const GORDER = {queued:-1, script:0, voice:1, images:2, motion:3, music:4, render:5, done:6};
+async function viewGenerating(id) {
+  renderNav('videos'); crumb([['Vídeos','#/videos'],['Gerando']]);
+  $('#view').innerHTML = `<div class="gen-wrap" id="gen"><div class="muted">Carregando...</div></div>`;
+  let lastStage = -1, lastSig = '';
+  const draw = async () => {
+    let v; try { v = await api('/api/videos/' + id); } catch (e) { $('#gen').innerHTML = `<div class="empty">${esc(e.message)}</div>`; clearInterval(pollTimer); return; }
+    if (!$('#gen')) return;
+    const stage = (['error','cancelled','paused'].includes(v.status)) ? (GORDER[v.stage] ?? lastStage) : (GORDER[v.status] ?? lastStage);
+    if (stage >= 0) lastStage = stage;
+    const sig = [v.status, v.pause_requested, v.progress, v.title, v.images.length, v.error].join('|');
+    if (sig === lastSig) return; lastSig = sig;
+    if (v.status === 'review') { clearInterval(pollTimer); location.hash = '#/revisar/' + id; return; }
+    if (v.status === 'done') {
+      clearInterval(pollTimer);
+      const tags = (v.hashtags || []).join(' '), copy = [v.title, v.description, tags].filter(Boolean).join('\n\n');
+      $('#gen').innerHTML = `<div class="gen-head"><h1>Seu vídeo está pronto! 🎉</h1><p>${esc(v.series_name)}</p></div>
+        <div class="card gen-card gdone"><video src="${esc(v.url)}" controls autoplay playsinline poster="${esc(v.thumb || '')}"></video>
+        <div><h2 style="margin:0 0 8px;font-size:22px">${esc(v.title)}</h2><div class="muted" style="font-size:14px">${v.duration ? Math.round(v.duration) + ' segundos' : ''}</div>
+        ${v.description || tags ? `<div class="box">${esc(v.description)}${tags ? '\n\n' + esc(tags) : ''}</div>` : ''}
+        ${v.score && v.score.tags ? `<div class="muted" style="font-size:14px;margin-top:12px;display:flex;gap:8px;align-items:center">${ic('music')}Trilha criada pela IA${v.score.mood ? ': ' + esc(v.score.mood) : ''}${v.score.bpm ? ' · ' + esc(v.score.bpm) + ' BPM' : ''}</div>` : ''}
+        ${v.music_warning ? `<div class="box" style="background:#fff7ed;color:#9a3412">${esc(v.music_warning)}</div>` : ''}
+        <div class="row-actions"><a class="btn sm" href="${esc(v.url)}?download=1">${ic('download')}Baixar MP4</a>
+        <button class="btn sm ghost" onclick='copyText(${JSON.stringify(copy).replace(/'/g, "&#39;")})'>${ic('copy')}Copiar legenda</button>
+        <a class="btn sm ghost" href="#/series/${v.series_id}">Ver série</a></div></div></div>`;
+      return;
+    }
+    const err = v.status === 'error' || v.status === 'cancelled';
+    const paused = v.status === 'paused';
+    const head = paused ? 'Geração pausada para edição' : v.pause_requested ? 'Pausando geração...' : err ? (v.status === 'error' ? 'Não foi possível gerar o vídeo' : 'Geração cancelada') : (v.status === 'queued' ? 'Na fila...' : 'Gerando seu vídeo...');
+    const sub = v.status === 'queued' && v.queue_position > 1 ? `${v.queue_position - 1} vídeo(s) na frente` : (v.title ? '“' + esc(v.title) + '”' : esc(v.series_name));
+    const steps = GSTEPS.map(([k, n, icn], i) => {
+      let cls = i < lastStage ? 'done' : i === lastStage ? (err ? 'err' : 'now') : '';
+      return `<div class="gstep ${cls}"><div class="gico">${cls === 'done' ? ic('check') : cls === 'err' ? ic('x') : ic(icn)}</div>${n}</div>`;
+    }).join('');
+    $('#gen').innerHTML = `<div class="gen-head"><h1>${head}</h1><p>${sub}</p></div>
+      <div class="card gen-card">
+        <div class="gpct"><b>${esc(paused ? 'Pausado para edição' : v.pause_requested ? 'Pausando após a etapa atual' : err ? (v.status === 'error' ? 'Erro' : 'Cancelado') : v.step_label)}</b><span>${v.progress}%</span></div>
+        <div class="gbar"><i style="width:${v.progress}%"></i></div>
+        <div class="gsteps">${steps}</div>
+        ${v.images.length ? `<div class="gthumbs">${v.images.map(u => `<img src="${esc(u)}" alt="">`).join('')}</div>` : ''}
+        ${v.error ? `<div class="box" style="background:#fef2f2;color:#991b1b">${esc(v.error)}</div>` : ''}
+        <div class="row-actions" style="justify-content:center;margin-top:24px">
+          ${paused ? (v.scenes && v.scenes.length ? `<a class="btn sm" href="#/revisar/${v.id}">${ic('type')}Editar roteiro e narração</a>` : `<button class="btn sm" onclick="genRetry('${v.id}')">${ic('refresh')}Retomar geração</button>`) : err ? `<button class="btn sm" onclick="genRetry('${v.id}')">${ic('refresh')}Tentar novamente</button>` : v.pause_requested ? '<span class="muted">Aguardando a etapa atual parar...</span>' : `<button class="btn sm" onclick="videoAction('${v.id}','pause')">${ic('pause')}Pausar e editar</button><button class="btn sm ghost" onclick="videoAction('${v.id}','cancel')">${ic('x')}Cancelar</button>`}
+          <a class="btn sm ghost" href="#/series/${v.series_id}">Ver série</a></div>
+        ${paused ? '<p class="muted" style="text-align:center;font-size:14px;margin:18px 0 0">O roteiro, a narração e os arquivos já gerados foram mantidos. Edite o texto, gere a narração novamente e aprove para continuar.</p>' : err ? '' : '<p class="muted" style="text-align:center;font-size:14px;margin:18px 0 0">Pode fechar esta página — o vídeo continua sendo gerado e aparece na aba Vídeos.</p>'}
+      </div>`;
+  };
+  await draw();
+  pollTimer = setInterval(draw, 2000);
+}
+async function genRetry(id) { try { await api(`/api/videos/${id}/retry`, {json:{}}); route(); } catch (e) { toast(e.message); } }
+
+function settingsTabs(on) {
+  const t = (id, href, icon, label) => `<a class="tab ${on === id ? 'on' : ''}" href="${href}" style="text-decoration:none">${ic(icon)}${label}</a>`;
+  return `<div class="tabs stabs">${t('geral', '#/settings', 'gear', 'Geral')}${t('provedores', '#/settings/provedores', 'zap', 'Provedores de IA')}${t('estilos', '#/settings/estilos', 'brush', 'Estilos de arte')}${t('musicas', '#/settings/musicas', 'music', 'Músicas')}</div>`;
+}
+async function viewStyles() {
+  renderNav('settings'); crumb([['Configurações','#/settings'],['Estilos de arte']]);
+  $('#view').innerHTML = `<div class="wide"><div class="pagehead"><h1>Configurações</h1><div class="inline" style="gap:10px"><button class="btn sm ghost" onclick="resetStyles()">${ic('refresh')}Restaurar padrões</button><button class="btn sm" onclick="editStyle()">${ic('plus')}Novo estilo</button></div></div>${settingsTabs('estilos')}
+    <p class="muted" style="margin:-8px 0 22px;font-size:15px">Deixe cada estilo do seu jeito. O prompt do estilo é aplicado em todas as imagens dos vídeos que usarem esse estilo. A ordem aqui é a ordem que aparece na etapa “Estilo de Arte”.</p>
+    <div id="sgrid" class="muted">Carregando...</div></div>`;
+  const draw = async () => {
+    try { S.styles = await api('/api/styles'); } catch (e) { $('#sgrid').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+    if (!$('#sgrid')) return;
+    $('#sgrid').className = 'sgrid';
+    $('#sgrid').innerHTML = S.styles.map((s, i) => `<div class="card scard2"><div class="im" style="${s.preview ? '' : 'background:' + STYLEGRAD[i % STYLEGRAD.length]}">${s.preview ? `<img src="${esc(s.preview)}" alt="">` : s.job === 'running' ? '<div class="spin"></div>' : ''}</div>
+      <div class="bd"><h4>${esc(s.name)}</h4><p>${esc(s.prompt)}</p>
+      ${s.job && s.job.startsWith('erro') ? `<div class="err" style="font-size:12px">Prévia: ${esc(s.job.slice(6, 120))}</div>` : ''}
+      <div class="sbtns"><button class="btn sm" style="flex:1" onclick="editStyle('${s.id}')">Editar</button>
+        <button class="ibtn" title="Gerar nova prévia" onclick="stylePreview('${s.id}')">${ic('refresh')}</button>
+        <button class="ibtn" title="Subir" onclick="styleAction('${s.id}','up')" ${i === 0 ? 'disabled style="opacity:.4"' : ''}>${ic('left').replace('class="i "', 'class="i" style="transform:rotate(90deg)"')}</button>
+        <button class="ibtn" title="Descer" onclick="styleAction('${s.id}','down')" ${i === S.styles.length - 1 ? 'disabled style="opacity:.4"' : ''}>${ic('left').replace('class="i "', 'class="i" style="transform:rotate(-90deg)"')}</button>
+        <button class="ibtn" title="Excluir" style="color:var(--err)" onclick="styleAction('${s.id}','delete')">${ic('trash')}</button></div></div></div>`).join('');
+  };
+  S.drawStyles = draw;
+  await draw();
+  pollTimer = setInterval(() => { if (S.styles && S.styles.some(s => s.job === 'running')) draw(); }, 3000);
+}
+function editStyle(id) {
+  const s = (S.styles || []).find(x => x.id === id) || {id:'', name:'', prompt:'', negative:'', motion:'', preview_prompt:''};
+  const m = document.createElement('div'); m.className = 'modal';
+  m.onclick = e => { if (e.target === m) m.remove(); };
+  m.innerHTML = `<div class="form-modal"><button class="close" onclick="this.closest('.modal').remove()">${ic('x')}</button>
+    <h2>${s.id ? 'Editar estilo' : 'Novo estilo'}</h2>
+    <div class="field"><div class="label">Nome</div><input class="input" id="e_name" maxlength="60" value="${esc(s.name)}" placeholder="Ex.: Cartoon Brasileiro"></div>
+    <div class="field"><div class="label">Prompt do estilo</div><textarea class="textarea" id="e_prompt" rows="5" maxlength="2000" placeholder="Ex.: modern cartoon illustration, thick outlines, vibrant flat colors, expressive faces...">${esc(s.prompt)}</textarea><div class="help"><span>Vai no começo do prompt de cada imagem (de preferência em inglês).</span></div></div>
+    <div class="field"><div class="label">Prompt negativo <span class="badge">Opcional</span></div><textarea class="textarea" id="e_neg" rows="3" maxlength="2000" placeholder="Ex.: photorealistic, 3d render, anime">${esc(s.negative)}</textarea><div class="help"><span>O que esse estilo nunca deve ter. Já incluímos “baixa qualidade, texto, marca d'água, mãos deformadas”.</span></div></div>
+    <div class="field"><div class="label">Movimento <span class="badge">Opcional</span></div><textarea class="textarea" id="e_motion" rows="2" maxlength="1000" placeholder="Ex.: exaggerated cartoon animation, bouncy movements">${esc(s.motion)}</textarea><div class="help"><span>Somado ao prompt de movimento das cenas animadas.</span></div></div>
+    <div class="field"><div class="label">Cena da miniatura <span class="badge">Opcional</span></div><input class="input" id="e_prev" maxlength="1000" value="${esc(s.preview_prompt)}" placeholder="Padrão: família brasileira rindo na cozinha"></div>
+    <div class="err" id="e_err"></div>
+    <div class="wfoot" style="margin-top:20px"><button class="btn ghost" onclick="this.closest('.modal').remove()">Cancelar</button><button class="btn" id="e_save" onclick="saveStyle('${s.id}')">${ic('check')}Salvar estilo</button></div></div>`;
+  document.body.appendChild(m);
+  $('#e_name').focus();
+}
+async function saveStyle(id) {
+  const b = $('#e_save'); b.disabled = true;
+  try {
+    await api('/api/styles', {json:{id, name:$('#e_name').value, prompt:$('#e_prompt').value, negative:$('#e_neg').value, motion:$('#e_motion').value, preview_prompt:$('#e_prev').value}});
+    document.querySelector('.modal').remove(); toast('Estilo salvo. Gerando a nova miniatura...');
+    S.config = await api('/api/config'); S.drawStyles && S.drawStyles();
+  } catch (e) { $('#e_err').textContent = e.message; b.disabled = false; }
+}
+async function styleAction(id, action) {
+  if (action === 'delete' && !confirm('Excluir este estilo?')) return;
+  try { await api(`/api/styles/${id}/${action}`, {json:{}}); S.config = await api('/api/config'); S.drawStyles && S.drawStyles(); } catch (e) { toast(e.message); }
+}
+async function stylePreview(id) {
+  try { await api(`/api/styles/${id}/preview`, {json:{}}); toast('Gerando nova miniatura...'); S.drawStyles && S.drawStyles(); } catch (e) { toast(e.message); }
+}
+async function resetStyles() {
+  if (!confirm('Voltar todos os estilos para o padrão? Suas alterações serão perdidas.')) return;
+  try { await api('/api/styles/reset', {json:{}}); S.config = await api('/api/config'); S.drawStyles && S.drawStyles(); toast('Estilos restaurados.'); } catch (e) { toast(e.message); }
+}
+async function viewProviders() {
+  renderNav('settings'); crumb([['Configurações','#/settings'],['Provedores de IA']]);
+  $('#view').innerHTML = `<div class="wide"><div class="pagehead"><h1>Configurações</h1></div>${settingsTabs('provedores')}<div style="max-width:780px" id="pv" class="muted">Carregando...</div></div>`;
+  let st; try { st = await api('/api/settings'); } catch (e) { $('#pv').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+  const models = st.ollama_models || [];
+  const card = (grp, id, name, badge, desc) => `<button class="mode ${st[grp] === id ? 'on' : ''}" data-grp="${grp}" data-id="${id}" onclick="pickProvider(this)"><div class="tt">${name} ${badge}</div><p>${desc}</p><span class="check" style="${st[grp] === id ? '' : 'display:none'}">${ic('check')}</span></button>`;
+  const key = (id, label, link, sk) => { sk = sk || id; return `<div class="field"><div class="label">${label}</div><input class="input" type="password" autocomplete="off" id="${id}" data-key="${sk}" placeholder="${st[sk + '_set'] ? 'Chave salva ' + esc(st[sk + '_hint']) + ' — deixe em branco para manter' : 'Cole sua chave aqui'}"><div class="help"><span>Fica salva só no seu PC${sk !== id ? ' (é a mesma chave usada no roteiro)' : ''}. ${link ? `<a href="${link}" target="_blank" rel="noopener">Pegar minha chave</a>` : ''}${st[sk + '_set'] ? ` · <a href="#" onclick="event.preventDefault();clearKey('${sk}')">Remover chave</a>` : ''}</span></div></div>`; };
+  const local = '<span class="badge new">LOCAL</span>', cloud = '<span class="badge prem">NUVEM</span>';
+  $('#pv').className = '';
+  $('#pv').innerHTML = `
+  <div class="card psec"><h3>Roteiro</h3><p>Quem escreve o roteiro, os prompts das imagens e o título dos vídeos.</p>
+    <div class="modes">
+      ${card('script_provider', 'ollama', 'Ollama', local, 'Roda no seu PC, sem custo. Mais lento.')}
+      ${card('script_provider', 'openai', 'OpenAI', cloud, 'GPT na nuvem. Rápido e com ótima escrita.')}
+      ${card('script_provider', 'gemini', 'Google Gemini', cloud, 'Gemini na nuvem. Rápido e barato.')}
+      ${card('script_provider', 'compatible', 'Compatível com OpenAI', cloud, 'Groq, OpenRouter, DeepSeek, LM Studio e outros.')}
+      ${card('script_provider', 'kie', 'Kie AI', cloud, 'Modelos de chat disponíveis na API do Kie AI.')}
+    </div>
+    <div class="pgroup ${st.script_provider === 'ollama' ? 'on' : ''}" data-for="script_provider:ollama">
+      <div class="field"><div class="label">Modelo</div><select class="select" id="ollama_model"><option value="">Automático (prefere qwen3)</option>${models.map(m => `<option ${st.ollama_model === m ? 'selected' : ''}>${esc(m)}</option>`).join('')}${st.ollama_model && !models.includes(st.ollama_model) ? `<option selected>${esc(st.ollama_model)}</option>` : ''}</select>${models.length ? '' : '<div class="help"><span>Ollama não respondeu agora — abra o Ollama para listar os modelos.</span></div>'}</div></div>
+    <div class="pgroup ${st.script_provider === 'openai' ? 'on' : ''}" data-for="script_provider:openai">
+      ${key('openai_key', 'Chave da API (OpenAI)', 'https://platform.openai.com/api-keys')}
+      <div class="field"><div class="label">Modelo</div><input class="input" id="openai_model" list="dl_openai" value="${esc(st.openai_model)}"><datalist id="dl_openai"><option>gpt-4o-mini</option><option>gpt-4o</option><option>gpt-4.1-mini</option><option>gpt-4.1</option></datalist></div></div>
+    <div class="pgroup ${st.script_provider === 'gemini' ? 'on' : ''}" data-for="script_provider:gemini">
+      ${key('gemini_key', 'Chave da API (Google AI Studio)', 'https://aistudio.google.com/apikey')}
+      <div class="field"><div class="label">Modelo</div><input class="input" id="gemini_model" list="dl_gemini" value="${esc(st.gemini_model)}"><datalist id="dl_gemini"><option>gemini-2.5-flash</option><option>gemini-2.5-pro</option><option>gemini-2.0-flash</option></datalist></div></div>
+    <div class="pgroup ${st.script_provider === 'compatible' ? 'on' : ''}" data-for="script_provider:compatible">
+      <div class="field"><div class="label">URL da API</div><input class="input" id="compat_base_url" value="${esc(st.compat_base_url)}" placeholder="Ex.: https://api.groq.com/openai/v1"></div>
+      ${key('compat_key', 'Chave da API', '')}
+      <div class="field"><div class="label">Modelo</div><input class="input" id="compat_model" value="${esc(st.compat_model)}" placeholder="Ex.: llama-3.3-70b-versatile"></div></div>
+    <div class="pgroup ${st.script_provider === 'kie' ? 'on' : ''}" data-for="script_provider:kie">
+      ${key('kie_key_script', 'Chave da API (Kie AI)', 'https://kie.ai/api-key', 'kie_key')}
+      <div class="field"><div class="label">Modelo de roteiro</div><input class="input" id="kie_script_model" list="dl_kie_script" value="${esc(st.kie_script_model || 'gpt-5-5')}"><datalist id="dl_kie_script"><option>gpt-5-5</option><option>gpt-5-6-luna</option><option>gpt-5-6-terra</option><option>gemini-3.8-flash-openai</option><option>gemini-3.7-flash-openai</option><option>gemini-3.5-flash-openai</option></datalist><div class="help">Modelos de chat do Kie AI. A chave é compartilhada com os outros serviços Kie.</div></div></div>
+    <div style="margin-top:6px"><button class="btn sm ghost" onclick="testProvider('script', this)">${ic('zap')}Salvar e testar</button><span class="testline" id="t_script"></span></div>
+  </div>
+  <div class="card psec"><h3>Imagens</h3><p>Quem desenha as cenas e as fichas dos personagens. OpenAI e Gemini usam a ficha de cada personagem como referência, o que mantém o mesmo rosto e a mesma roupa em todas as cenas.</p>
+    <div class="modes" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      ${card('image_provider', 'comfyui', 'ComfyUI', local, 'Roda no seu PC (Z-Image Turbo), sem custo.')}
+      ${card('image_provider', 'openai', 'OpenAI', cloud, 'O gerador de imagens do ChatGPT.')}
+      ${card('image_provider', 'gemini', 'Google Gemini', cloud, 'Nano Banana, ótimo para manter personagens.')}
+      ${card('image_provider', 'kie', 'Kie AI', cloud, 'Gere imagens com Imagen 4 Fast pela API do Kie AI.')}
+    </div>
+    <div class="pgroup ${st.image_provider === 'comfyui' ? 'on' : ''}" data-for="image_provider:comfyui"><div class="note">Usa o <b>workflow.json</b> do seu ComfyUI. O ComfyUI precisa estar aberto.</div></div>
+    <div class="pgroup ${st.image_provider === 'openai' ? 'on' : ''}" data-for="image_provider:openai">
+      ${key('openai_key_img', 'Chave da API (OpenAI)', 'https://platform.openai.com/api-keys', 'openai_key')}
+      <div class="grid2"><div class="field"><div class="label">Modelo</div><input class="input" id="openai_image_model" list="dl_oimg" value="${esc(st.openai_image_model)}"><datalist id="dl_oimg"><option>gpt-image-2</option><option>gpt-image-1.5</option><option>gpt-image-1</option><option>gpt-image-1-mini</option></datalist></div>
+      <div class="field"><div class="label">Qualidade</div><select class="select" id="openai_image_quality">${[['low','Baixa — mais barata'],['medium','Média'],['high','Alta — mais cara']].map(([v, n]) => `<option value="${v}" ${st.openai_image_quality === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div></div></div>
+    <div class="pgroup ${st.image_provider === 'gemini' ? 'on' : ''}" data-for="image_provider:gemini">
+      ${key('gemini_key_img', 'Chave da API (Google AI Studio)', 'https://aistudio.google.com/apikey', 'gemini_key')}
+      <div class="field"><div class="label">Modelo</div><input class="input" id="gemini_image_model" list="dl_gimg" value="${esc(st.gemini_image_model)}"><datalist id="dl_gimg"><option>gemini-3.1-flash-image</option><option>gemini-nano-banana-2.1</option><option>gemini-3.1-flash-lite-image</option><option>gemini-3-pro-image</option><option>gemini-2.5-flash-image</option></datalist></div></div>
+    <div class="pgroup ${st.image_provider === 'kie' ? 'on' : ''}" data-for="image_provider:kie">
+      ${key('kie_key_image', 'Chave da API (Kie AI)', 'https://kie.ai/api-key', 'kie_key')}
+      <div class="field"><div class="label">Modelo de imagem</div><select class="select" id="kie_image_model">${[['google/imagen4-fast','Google Imagen 4 Fast'],['google/imagen4','Google Imagen 4'],['google/imagen4-ultra','Google Imagen 4 Ultra']].map(([v,n]) => `<option value="${v}" ${st.kie_image_model === v ? 'selected' : ''}>${n}</option>`).join('')}${['google/imagen4-fast','google/imagen4','google/imagen4-ultra'].includes(st.kie_image_model) ? '' : `<option selected>${esc(st.kie_image_model)}</option>`}</select><div class="help">A chave é compartilhada com roteiro e voz Kie AI.</div></div></div>
+    <div class="pgroup ${st.image_provider !== 'comfyui' ? 'on' : ''}" data-for="image_provider:cloud" id="img_parallel_box">
+      <div class="field" style="max-width:260px"><div class="label">Imagens ao mesmo tempo</div><input class="input" type="number" min="1" max="8" id="image_parallel" value="${st.image_parallel}"><div class="help"><span>Mais rápido; diminua se der erro de limite.</span></div></div></div>
+    <div style="margin-top:6px"><button class="btn sm ghost" onclick="testProvider('image', this)">${ic('zap')}Salvar e testar</button><span class="testline" id="t_image"></span></div>
+    <div id="t_image_pic" style="margin-top:12px"></div>
+  </div>
+  <div class="card psec"><h3>Movimento das imagens</h3><p>Escolha onde animar as cenas quando a série estiver no modo “Movimento por vídeo”.</p>
+    <div class="modes">
+      ${card('motion_provider', 'comfyui', 'ComfyUI · LTX-2', local, 'Gera localmente. Precisa de GPU e do workflow LTX-2.')}
+      ${card('motion_provider', 'kie', 'Kie AI · Wan 2.2', cloud, 'Gera na nuvem com sua chave Kie AI. Cobrado por segundo de vídeo.')}
+    </div>
+    <div class="pgroup ${st.motion_provider === 'comfyui' ? 'on' : ''}" data-for="motion_provider:comfyui"><div class="note">Usa o workflow <b>workflow_video.json</b> no ComfyUI.</div></div>
+    <div class="pgroup ${st.motion_provider === 'kie' ? 'on' : ''}" data-for="motion_provider:kie">
+      ${key('kie_key_motion', 'Chave da API (Kie AI)', 'https://kie.ai/api-key', 'kie_key')}
+      <div class="field"><div class="label">Resolução do movimento</div><select class="select" id="kie_motion_resolution"><option value="480p" ${st.kie_motion_resolution === '480p' ? 'selected' : ''}>480p · menor custo</option><option value="720p" ${(!st.kie_motion_resolution || st.kie_motion_resolution === '720p') ? 'selected' : ''}>720p · melhor definição</option></select><div class="help">Wan 2.2 Image-to-Video Turbo · proporção vertical 9:16.</div></div>
+    </div>
+    <div style="margin-top:6px"><button class="btn sm ghost" onclick="testProvider('motion', this)">${ic('zap')}Verificar configuração</button><span class="testline" id="t_motion"></span></div>
+  </div>
+  <div class="card psec"><h3>Voz</h3><p>Quem grava a narração dos vídeos. As vozes do provedor escolhido aparecem na etapa “Idioma e Voz”.</p>
+    <div class="modes">
+      ${card('voice_provider', 'voicestudio', 'VoiceStudio', local, 'Roda no seu PC, sem custo. Precisa estar aberto.')}
+      ${card('voice_provider', 'elevenlabs', 'ElevenLabs', cloud, 'Vozes muito naturais na nuvem, inclusive as vozes da sua conta.')}
+      ${card('voice_provider', 'kie', 'Kie AI', cloud, 'Gemini TTS na nuvem, com seleção de voz e geração assíncrona.')}
+    </div>
+    <div class="pgroup ${st.voice_provider === 'voicestudio' ? 'on' : ''}" data-for="voice_provider:voicestudio">
+      <div class="field"><div class="label">Modelo de voz</div><input class="input" id="tts_model" value="${esc(st.tts_model)}"></div></div>
+    <div class="pgroup ${st.voice_provider === 'elevenlabs' ? 'on' : ''}" data-for="voice_provider:elevenlabs">
+      ${key('eleven_key', 'Chave da API (ElevenLabs)', 'https://elevenlabs.io/app/settings/api-keys')}
+      <div class="field"><div class="label">Modelo</div><select class="select" id="eleven_model">${[['eleven_multilingual_v2','Multilingual v2 — melhor qualidade'],['eleven_turbo_v2_5','Turbo v2.5 — rápido'],['eleven_flash_v2_5','Flash v2.5 — mais rápido e barato'],['eleven_v3','v3 — mais expressivo']].map(([v, n]) => `<option value="${v}" ${st.eleven_model === v ? 'selected' : ''}>${n}</option>`).join('')}${['eleven_multilingual_v2','eleven_turbo_v2_5','eleven_flash_v2_5','eleven_v3'].includes(st.eleven_model) ? '' : `<option selected>${esc(st.eleven_model)}</option>`}</select></div></div>
+    <div class="pgroup ${st.voice_provider === 'kie' ? 'on' : ''}" data-for="voice_provider:kie">
+      ${key('kie_key', 'Chave da API (Kie AI)', 'https://kie.ai/api-key')}
+      <div class="field"><div class="label">Modelo TTS</div><select class="select" id="kie_model">${[['google/gemini-3-8-flash-tts','Gemini 3.8 Flash TTS'],['google/gemini-3-1-flash-tts','Gemini 3.1 Flash TTS'],['google/gemini-3-8-flash-lite-tts','Gemini 3.8 Flash Lite TTS'],['google/gemini-2-5-pro-tts','Gemini 2.5 Pro TTS']].map(([v,n]) => `<option value="${v}" ${st.kie_model === v ? 'selected' : ''}>${n}</option>`).join('')}${['google/gemini-3-8-flash-tts','google/gemini-3-1-flash-tts','google/gemini-3-8-flash-lite-tts','google/gemini-2-5-pro-tts'].includes(st.kie_model) ? '' : `<option selected>${esc(st.kie_model)}</option>`}</select><div class="help">A geração pode levar alguns minutos; o Kie AI devolve o áudio WAV pronto.</div></div></div>
+    <div style="margin-top:6px"><button class="btn sm ghost" onclick="testProvider('voice', this)">${ic('zap')}Salvar e testar</button><span class="testline" id="t_voice"></span></div>
+  </div>
+  <div class="note">Séries já criadas continuam com a voz que foi escolhida nelas. Para usar uma voz da ElevenLabs ou do Kie AI, crie uma série nova depois de trocar o provedor.</div>
+  <div class="wfoot" style="margin-top:24px"><span></span><button class="btn" onclick="saveProviders()">${ic('check')}Salvar provedores</button></div>`;
+}
+function pickProvider(el) {
+  const grp = el.dataset.grp;
+  document.querySelectorAll(`.mode[data-grp="${grp}"]`).forEach(b => { const on = b === el; b.classList.toggle('on', on); b.querySelector('.check').style.display = on ? '' : 'none'; });
+  document.querySelectorAll(`.pgroup[data-for^="${grp}:"]`).forEach(g => g.classList.toggle('on', g.dataset.for === grp + ':' + el.dataset.id || (g.dataset.for === grp + ':cloud' && el.dataset.id !== 'comfyui')));
+}
+function providerPayload() {
+  const sel = g => (document.querySelector(`.mode.on[data-grp="${g}"]`) || {}).dataset.id;
+  const val = id => { const e = document.getElementById(id); return e ? e.value : undefined; };
+  const d = {script_provider:sel('script_provider'), voice_provider:sel('voice_provider'), image_provider:sel('image_provider'), motion_provider:sel('motion_provider')};
+  ['ollama_model','openai_model','gemini_model','compat_base_url','compat_model','tts_model','eleven_model','kie_model','kie_script_model','kie_image_model','kie_motion_resolution','openai_image_model','openai_image_quality','gemini_image_model','image_parallel'].forEach(k => { const v = val(k); if (v !== undefined) d[k] = v; });
+  document.querySelectorAll('input[data-key]').forEach(e => { if (e.value.trim()) d[e.dataset.key] = e.value.trim(); });
+  return d;
+}
+async function saveProviders(quiet) {
+  await api('/api/settings', {json:providerPayload()});
+  S.config = await api('/api/config'); S.voices = null; loadServices();
+  if (!quiet) { toast('Provedores salvos.'); viewProviders(); }
+}
+async function testProvider(kind, btn) {
+  const out = $('#t_' + kind); out.className = 'testline'; out.textContent = kind === 'image' ? 'Gerando uma imagem de teste...' : kind === 'motion' ? 'Verificando configuração...' : 'Testando...'; btn.disabled = true;
+  try {
+    await saveProviders(true);
+    const r = await api('/api/providers/test', {json:{kind}});
+    out.className = 'testline ok'; out.textContent = '✓ ' + r.detail;
+    if (r.image) $('#t_image_pic').innerHTML = `<img src="${esc(r.image)}" alt="" style="width:140px;border-radius:10px;border:1px solid var(--line)">`;
+    document.querySelectorAll('input[data-key]').forEach(e => { if (e.value) { e.value = ''; e.placeholder = 'Chave salva — deixe em branco para manter'; } });
+  } catch (e) { out.className = 'testline bad'; out.textContent = '✗ ' + e.message.slice(0, 220); }
+  btn.disabled = false;
+}
+async function clearKey(id) {
+  if (!confirm('Remover esta chave?')) return;
+  try { await api('/api/settings', {json:{[id]:'-'}}); toast('Chave removida.'); viewProviders(); } catch (e) { toast(e.message); }
+}
+async function viewMusicLib() {
+  renderNav('settings'); crumb([['Configurações','#/settings'],['Músicas']]);
+  $('#view').innerHTML = `<div class="wide"><div class="pagehead"><h1>Configurações</h1><label class="btn sm">${ic('upload')}Adicionar músicas<input type="file" accept="audio/*" multiple hidden onchange="libUpload(this.files)"></label></div>${settingsTabs('musicas')}
+    <p class="muted" style="margin:-8px 0 18px;font-size:15px">Sua biblioteca de músicas de fundo. Dê nomes e etiquetas (ex.: calma, suspense, comédia) para achar rápido. Quando a música é mais curta que o vídeo, ela se repete com uma <b>emenda suave</b> (crossfade), sem corte nem silêncio — use “Ouvir emenda” para conferir.</p>
+    ${musicGeneratorPanel(false)}
+    <input class="input" id="libSearch" placeholder="Pesquisar por nome ou etiqueta" value="${esc(S.libQ || '')}" oninput="S.libQ=this.value;drawLib(true)" style="max-width:520px;margin-bottom:16px">
+    <div id="lib" class="muted">Carregando...</div></div>`;
+  await drawLib();
+  initMusicGenerator();
+}
+async function drawLib(cached) {
+  const el = $('#lib'); if (!el) return;
+  if (!cached || !S.music) { try { S.music = await api('/api/music'); } catch (e) { el.innerHTML = `<div class="err">${esc(e.message)}</div>`; return; } }
+  const list = S.music.filter(m => musicMatch(m, S.libQ));
+  el.className = '';
+  if (!S.music.length) { el.innerHTML = `<div class="empty">${ic('music')}<h3>Nenhuma música ainda</h3><p>Clique em “Adicionar músicas” ou arraste arquivos MP3/WAV para cá.</p></div>`; return; }
+  if (!list.length) { el.innerHTML = '<div class="empty" style="padding:28px">Nenhuma música encontrada.</div>'; return; }
+  el.innerHTML = `<div class="tracks">${list.map(m => { const f = esc(JSON.stringify(m.file)); const d = m.duration ? `${Math.floor(m.duration / 60)}:${String(Math.round(m.duration % 60)).padStart(2, '0')}` : ''; return `<div class="track" style="cursor:default;gap:14px;flex-wrap:wrap">
+    <span class="swatch" style="background:${SWATCH[hash(m.file) % SWATCH.length]}"></span>
+    <div style="flex:1;min-width:220px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input class="input" style="height:40px;font-size:15px;flex:1;min-width:160px" value="${esc(m.name)}" onchange='libMeta(${f}, {name:this.value})' title="Nome">
+      <input class="input" style="height:40px;font-size:14px;flex:1;min-width:160px" value="${esc((m.tags || []).join(', '))}" placeholder="etiquetas: calma, suspense" onchange='libMeta(${f}, {tags:this.value})' title="Etiquetas">
+      <span class="muted" style="font-size:14px;width:44px">${d}</span></div>
+    <button class="btn sm ghost" data-loop="${esc(m.file)}" onclick='playLoop(${f})'>${ic('refresh')}Ouvir emenda</button>
+    <button class="sq" style="margin-left:0" data-track="${esc(m.file)}" onclick='playTrack(${f})' aria-label="Ouvir">${icf(S.playing === 'm:' + m.file ? 'pause' : 'play')}</button>
+    <button class="ibtn" style="color:var(--err)" title="Excluir" onclick='libDelete(${f})'>${ic('trash')}</button></div>`; }).join('')}</div>`;
+  const lib = $('#lib');
+  ['dragenter','dragover'].forEach(ev => lib.addEventListener(ev, e => e.preventDefault()));
+  lib.addEventListener('drop', e => { e.preventDefault(); libUpload(e.dataTransfer.files); });
+}
+async function libMeta(file, data) {
+  try { await api(`/api/music/${encodeURIComponent(file)}/meta`, {json:data}); S.music = null; await drawLib(); toast('Música atualizada.'); } catch (e) { toast(e.message); }
+}
+async function libDelete(file) {
+  if (!confirm('Excluir esta música da biblioteca?')) return;
+  try { await api(`/api/music/${encodeURIComponent(file)}/delete`, {json:{}}); S.music = null; drawLib(); } catch (e) { toast(e.message); }
+}
+async function libUpload(files) {
+  let ok = 0;
+  for (const f of files) {
+    try { const r = await fetch('/api/music/upload', {method:'POST', headers:{'X-Filename':encodeURIComponent(f.name)}, body:f}); const j = await r.json(); if (!r.ok) throw new Error(j.error); ok++; } catch (e) { toast(f.name + ': ' + e.message); }
+  }
+  if (ok) { toast(`${ok} música(s) adicionada(s).`); S.music = null; drawLib(); }
+}
+function playLoop(file) {
+  const key = 'l:' + file;
+  if (S.playing === key) { S.audio.pause(); S.playing = null; return; }
+  S.audio.pause(); S.playing = key; refreshPlayIcons();
+  const b = document.querySelector(`[data-loop="${CSS.escape(file)}"]`); if (b) b.innerHTML = 'Preparando...';
+  S.audio.src = `/api/music/${encodeURIComponent(file)}/loop-preview`;
+  S.audio.play().then(() => { if (b) b.innerHTML = ic('pause') + 'Tocando a emenda'; }).catch(() => { S.playing = null; if (b) b.innerHTML = ic('refresh') + 'Ouvir emenda'; toast('Não foi possível preparar a prévia.'); });
+  S.audio.onended = () => { S.playing = null; if (b) b.innerHTML = ic('refresh') + 'Ouvir emenda'; refreshPlayIcons(); };
+}
+async function viewSettings() {
+  renderNav('settings'); crumb([['Configurações']]);
+  $('#view').innerHTML = `<div class="wide"><div class="pagehead"><h1>Configurações</h1><button class="btn sm ghost" onclick="loadServices().then(viewSettings)">${ic('refresh')}Verificar serviços</button></div>${settingsTabs('geral')}<div style="max-width:780px"><div id="svcGrid" class="svc-grid"></div><div id="setForm" class="muted">Carregando...</div></div></div>`;
+  await loadServices();
+  const sv = S.services, sp = sv.script_provider || {}, vp = sv.voice_provider || {};
+  const card = (n, s, okText, badText) => `<div class="card svc-card"><b><span class="dot ${s.ok ? 'ok' : 'bad'}"></span>${n}</b><small>${esc(s.ok ? okText : badText)}</small></div>`;
+  $('#svcGrid').innerHTML = [
+    card('Roteiro', sp, sp.name || '', (sp.name || '') + ' — verifique em Provedores de IA'),
+    card('Voz', vp, vp.name || '', (vp.name || '') + ' — verifique em Provedores de IA'),
+    card('ComfyUI', sv.comfyui || {}, (sv.comfyui || {}).url || '', (sv.comfyui || {}).error || 'indisponível'),
+    card('FFmpeg', sv.ffmpeg || {}, 'disponível', 'não encontrado no PATH'),
+    card('Movimento', sv.motion_provider || {}, (sv.motion_provider || {}).name || 'configurado', 'verifique em Provedores de IA'),
+  ].join('');
+  let st; try { st = await api('/api/settings'); } catch (e) { $('#setForm').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+  const models = st.ollama_models || [];
+  $('#setForm').innerHTML = `<div class="grid2">
+      <div class="field"><div class="label">Gerar com antecedência (horas)</div><input class="input" id="s_lead" type="number" min="0" max="23" step="0.5" value="${st.lead_hours}"></div>
+      <div class="field"><div class="label">Largura da imagem</div><input class="input" id="s_w" type="number" step="16" value="${st.image_width}"></div>
+      <div class="field"><div class="label">Altura da imagem</div><input class="input" id="s_h" type="number" step="16" value="${st.image_height}"></div>
+      <div class="field"><div class="label">Máx. quadros LTX-2 por cena</div><input class="input" id="s_fr" type="number" min="49" max="257" step="8" value="${st.motion_max_frames}"><div class="help"><span>121 ≈ 4,8 s (25 fps). Mais quadros = mais VRAM e tempo.</span></div></div>
+      <div class="field"><div class="label">Volume padrão da música</div><input class="input" id="s_vol" type="number" min="0" max="0.6" step="0.01" value="${st.music_volume}"></div>
+    </div>
+    <label class="checkline" style="margin-top:0"><input type="checkbox" id="s_keep" ${st.keep_work_files ? 'checked' : ''}>Manter arquivos de trabalho (imagens, áudios e clipes de cada cena)</label>
+    <div class="muted" style="font-size:14px;margin-top:14px">Estúdio manual (versão anterior): <a href="/estudio.html">/estudio.html</a></div>
+    <div class="wfoot" style="margin-top:28px"><span></span><button class="btn" onclick="saveSettings()">${ic('check')}Salvar configurações</button></div>`;
+}
+async function saveSettings() {
+  try {
+    await api('/api/settings', {json:{lead_hours:+$('#s_lead').value, image_width:+$('#s_w').value, image_height:+$('#s_h').value, motion_max_frames:+$('#s_fr').value, music_volume:+$('#s_vol').value, keep_work_files:$('#s_keep').checked}});
+    S.config = await api('/api/config'); toast('Configurações salvas.');
+  } catch (e) { toast(e.message); }
+}
+
+/* ------------------------------------------------------------------ início */
+(async function init() {
+  renderNav('series'); renderServices();
+  try { S.config = await api('/api/config'); } catch (e) { $('#view').innerHTML = `<div class="narrow empty"><h3>Servidor indisponível</h3><p>${esc(e.message)}</p></div>`; return; }
+  if (D.niche && !D.niche_preset) S.nicheTab = 'custom';
+  route(); loadServices(); setInterval(loadServices, 20000);
+})();
+</script>
+</body>
+</html>

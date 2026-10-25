@@ -1,0 +1,30 @@
+# Dependências de usuário, dados e saídas
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Dados locais: podem conter chaves, séries, configurações e histórico
+/data/**
+!/data/.gitkeep
+
+# Mídia, projetos e exportações gerados pelo aplicativo
+/audio/**
+!/audio/.gitkeep
+/videos/**
+!/videos/.gitkeep
+/exportados/**
+!/exportados/.gitkeep
+/music/**
+!/music/.gitkeep
+
+# Cópias de versões anteriores mantidas na máquina de desenvolvimento
+/backup_*/
