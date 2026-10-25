@@ -1,9 +1,11 @@
-import json, os, threading, time, uuid, urllib.request, urllib.parse, urllib.error, base64, re, mimetypes, subprocess, shutil, wave, io, struct
+import json, os, threading, time, uuid, urllib.request, urllib.parse, urllib.error, base64, re, mimetypes, subprocess, shutil, wave, io, struct, secrets
+from http.cookies import SimpleCookie
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 import pipeline
+import local_auth
 ROOT=Path(__file__).resolve().parent
-HOST=os.getenv('HOST','0.0.0.0'); PORT=int(os.getenv('PORT','8787'))
+HOST=os.getenv('HOST','127.0.0.1'); PORT=int(os.getenv('PORT','8787'))
 COMFY=os.getenv('COMFY_URL','http://127.0.0.1:8188').rstrip('/')
 VOICE=os.getenv('VOICE_URL','http://127.0.0.1:3900').rstrip('/')
 OLLAMA=os.getenv('OLLAMA_URL','http://127.0.0.1:11434').rstrip('/')
@@ -12,6 +14,90 @@ SAMPLE_TEXT='Olá! Esta é uma demonstração da voz selecionada para o Históri
 DEFAULT=json.loads((ROOT/'workflow.json').read_text(encoding='utf-8'))
 lock=threading.RLock(); jobs={}; queue=[]; active=None; narrations={}
 NEG=DEFAULT['71']['inputs']['text']
+AUTH_LOCK=threading.RLock(); AUTH_SESSIONS={}; AUTH_FAILURES={}
+AUTH_COOKIE='historias_studio_session'; AUTH_SESSION_SECONDS=12*60*60
+
+def _auth_user(handler):
+    try:
+        cookie=SimpleCookie(); cookie.load(handler.headers.get('Cookie',''))
+        token=cookie.get(AUTH_COOKIE).value if cookie.get(AUTH_COOKIE) else ''
+    except Exception: token=''
+    with AUTH_LOCK:
+        session=AUTH_SESSIONS.get(token)
+        if not session: return None
+        if session['expires'] < time.time():
+            AUTH_SESSIONS.pop(token,None); return None
+        return session['user']
+
+def _auth_cookie(token, max_age=AUTH_SESSION_SECONDS):
+    return f'{AUTH_COOKIE}={token}; Path=/; Max-Age={max_age}; HttpOnly; SameSite=Strict'
+
+def _read_auth_body(handler):
+    try: size=int(handler.headers.get('Content-Length','0') or 0)
+    except ValueError: size=0
+    if size<0 or size>16000: raise ValueError('Dados inválidos.')
+    raw=handler.rfile.read(size) if size else b'{}'
+    data=json.loads(raw or b'{}')
+    if not isinstance(data,dict): raise ValueError('Dados inválidos.')
+    return data
+
+def _auth_reply(handler, code, data, cookie=None):
+    raw=json.dumps(data,ensure_ascii=False).encode('utf-8')
+    handler.send_response(code); handler.send_header('Content-Type','application/json; charset=utf-8')
+    handler.send_header('Cache-Control','no-store'); handler.send_header('Content-Length',str(len(raw)))
+    if cookie is not None: handler.send_header('Set-Cookie',cookie)
+    handler.end_headers(); handler.wfile.write(raw)
+
+def _auth_route(handler, method):
+    path=urllib.parse.urlparse(handler.path).path
+    if not path.startswith('/api/auth/'): return False
+    if method=='GET' and path=='/api/auth/status':
+        user=_auth_user(handler)
+        _auth_reply(handler,200,{'authenticated':bool(user),'setup_needed':not local_auth.has_user(),
+                                 'user':{'name':user['name']} if user else None})
+        return True
+    if method!='POST':
+        _auth_reply(handler,405,{'error':'Método não permitido.'}); return True
+    try:
+        data=_read_auth_body(handler)
+        if path=='/api/auth/register':
+            user=local_auth.create_user(data)
+            token=secrets.token_urlsafe(32)
+            with AUTH_LOCK: AUTH_SESSIONS[token]={'user':user,'expires':time.time()+AUTH_SESSION_SECONDS}
+            _auth_reply(handler,201,{'ok':True,'user':{'name':user['name']}},_auth_cookie(token)); return True
+        if path=='/api/auth/login':
+            ip=handler.client_address[0] if handler.client_address else 'local'
+            now=time.monotonic()
+            with AUTH_LOCK:
+                failures,blocked_until=AUTH_FAILURES.get(ip,(0,0))
+            if now<blocked_until:
+                _auth_reply(handler,429,{'error':'Muitas tentativas. Aguarde 15 minutos e tente novamente.'}); return True
+            user=local_auth.verify_user(data.get('username'),data.get('password'))
+            if not user:
+                with AUTH_LOCK:
+                    failures+=1
+                    AUTH_FAILURES[ip]=(0,now+900) if failures>=6 else (failures,0)
+                _auth_reply(handler,401,{'error':'Usuário ou senha incorretos.'}); return True
+            with AUTH_LOCK:
+                AUTH_FAILURES.pop(ip,None)
+                token=secrets.token_urlsafe(32)
+                AUTH_SESSIONS[token]={'user':user,'expires':time.time()+AUTH_SESSION_SECONDS}
+            _auth_reply(handler,200,{'ok':True,'user':{'name':user['name']}},_auth_cookie(token)); return True
+        if path=='/api/auth/logout':
+            try:
+                cookie=SimpleCookie(); cookie.load(handler.headers.get('Cookie',''))
+                token=cookie.get(AUTH_COOKIE).value if cookie.get(AUTH_COOKIE) else ''
+            except Exception: token=''
+            with AUTH_LOCK: AUTH_SESSIONS.pop(token,None)
+            _auth_reply(handler,200,{'ok':True},_auth_cookie('',0)); return True
+        _auth_reply(handler,404,{'error':'Não encontrado.'}); return True
+    except (ValueError,json.JSONDecodeError) as exc:
+        _auth_reply(handler,400,{'error':str(exc)}); return True
+
+def _requires_auth(handler):
+    path=urllib.parse.urlparse(handler.path).path
+    return (path.startswith('/api/') or path.startswith('/media/')) and not path.startswith('/api/auth/') and not _auth_user(handler)
+
 def call(path, data=None, method=None):
     body=json.dumps(data).encode() if data is not None else None
     req=urllib.request.Request(COMFY+path,data=body,headers={'Content-Type':'application/json'} if body else {},method=method)
@@ -157,6 +243,8 @@ class Handler(BaseHTTPRequestHandler):
         raw=json.dumps(data,ensure_ascii=False).encode() if ctype=='application/json' else data
         self.send_response(code);self.send_header('Content-Type',ctype+'; charset=utf-8' if ctype.startswith('text/') else ctype);self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
     def do_GET(self):
+        if _auth_route(self,'GET'): return
+        if _requires_auth(self): _auth_reply(self,401,{'error':'Entre na sua conta local para continuar.'}); return
         if pipeline.route(self,'GET'): return
         p=urllib.parse.urlparse(self.path)
         if p.path=='/api/voice/status':
@@ -231,6 +319,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send(200,path.read_bytes(),types.get(path.suffix,'application/octet-stream'))
     def do_POST(self):
         try:
+            if _auth_route(self,'POST'): return
+            if _requires_auth(self): _auth_reply(self,401,{'error':'Entre na sua conta local para continuar.'}); return
             if pipeline.route(self,'POST'): return
             data=json.loads(self.rfile.read(min(int(self.headers.get('Content-Length','0')),1000000)))
             if self.path=='/api/plan':

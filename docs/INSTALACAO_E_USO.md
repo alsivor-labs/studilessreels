@@ -119,8 +119,9 @@ Endereços locais padrão esperados:
 
    Alternativamente: `python server.py` ou `py server.py`.
 3. Acesse [http://localhost:8787](http://localhost:8787).
-4. Abra **Configurações** e escolha o provedor de cada etapa. Para serviços na nuvem, informe a chave e o modelo aceito pela sua conta e use **Salvar e testar**. As chaves são gravadas localmente em `data/settings.json`.
-5. Se um serviço estiver em outro endereço, configure as variáveis antes de iniciar o servidor. Exemplo no PowerShell:
+4. Na primeira abertura, crie seu usuário local: nome de exibição, usuário e senha com pelo menos 10 caracteres. Não é solicitado e-mail nem há conta em servidor externo. A senha é armazenada como hash em `data/local_user.json`; a sessão expira ao reiniciar o servidor ou após 12 horas.
+5. Abra **Configurações** e escolha o provedor de cada etapa. Para serviços na nuvem, informe a chave e o modelo aceito pela sua conta e use **Salvar e testar**. As chaves são gravadas localmente em `data/settings.json`.
+6. Se um serviço estiver em outro endereço, configure as variáveis antes de iniciar o servidor. Exemplo no PowerShell:
 
    ```powershell
    $env:COMFY_URL = 'http://127.0.0.1:8188'
@@ -130,6 +131,8 @@ Endereços locais padrão esperados:
    ```
 
    Ajuste apenas as URLs dos serviços usados. Essas variáveis valem para aquela janela do PowerShell. O servidor usa a porta `8787` por padrão; para alterá-la, defina `$env:PORT` antes de iniciar.
+
+Se esquecer a senha, encerre o servidor e apague `data/local_user.json`; na próxima abertura, o aplicativo permitirá criar um novo usuário. Os dados das séries, vídeos e configurações ficam em outros arquivos e não são removidos com esse reset.
 
 ## 5. Criar um vídeo
 
@@ -153,7 +156,7 @@ Esses caminhos são criados pelo programa e permanecem no seu computador. O `.gi
 
 O uso de API pode ter custo por chamada, imagem, minuto de áudio ou vídeo. Verifique preço, limites, política de privacidade e termos comerciais do provedor. O projeto não controla a retenção nem o uso dos dados dos provedores externos.
 
-O servidor atualmente escuta em `0.0.0.0:8787`. Isso pode permitir acesso a partir de outros dispositivos na rede local. Use somente em rede confiável; não exponha a porta à internet sem autenticação, proteção contra abuso e configuração segura.
+O servidor escuta por padrão somente em `127.0.0.1:8787`, neste PC. As rotas do estúdio exigem login; o servidor local não configura HTTPS. Não o exponha à internet. Mudar a variável `HOST` para permitir acesso pela rede pode transmitir credenciais sem criptografia.
 
 ## 7. Limitações atuais
 

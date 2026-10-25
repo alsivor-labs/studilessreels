@@ -13,6 +13,16 @@ Aplicação local para planejar séries de histórias, gerar narração e criar 
 - Guarda séries, configurações, trabalhos e exportações no computador.
 - Pode agendar a produção diária enquanto o computador e o servidor estiverem ligados.
 
+## Capturas de tela
+
+As imagens abaixo mostram o cadastro local, os provedores de IA e os guias dentro do aplicativo.
+
+![Tela de cadastro e login local](docs/screenshots/login-local.png)
+
+![Configuração dos provedores de nuvem](docs/screenshots/provedores-nuvem.png)
+
+![Guias de instalação dentro da plataforma](docs/screenshots/guias-instalacao.png)
+
 Depois que você inicia a série, o estúdio gera e revisa o roteiro e continua automaticamente para narração, imagens e montagem. Não é preciso aprovar cada roteiro; a revisão manual fica disponível como opção.
 
 A publicação automática em redes sociais não está implementada. As integrações e os limites conhecidos estão descritos no guia.
@@ -25,6 +35,8 @@ A publicação automática em redes sociais não está implementada. As integra�
 - Para geração local de IA: ComfyUI e/ou Ollama e VoiceStudio, conforme os provedores usados.
 - Uma GPU NVIDIA com CUDA é recomendada para geração local no ComfyUI. Para o fluxo completo com LTX-2, considere 32 GB de VRAM, 64 GB de RAM e ao menos 100 GB livres para modelos e arquivos. Esse perfil é uma recomendação para ter margem, não uma garantia de desempenho ou compatibilidade.
 - Se usar provedores de IA na nuvem, o PC não precisa executar esses modelos localmente; é preciso internet e contas/chaves dos serviços escolhidos.
+
+Na primeira abertura, crie um usuário local com nome, nome de usuário e senha. A conta e o hash da senha ficam em `data/local_user.json`; não é preciso cadastrar e-mail nem usar autenticação externa. Cada instalação local tem uma conta e os dados do estúdio ficam no perfil local desse PC. Se esquecer a senha, encerre o aplicativo e apague apenas `data/local_user.json` para habilitar um novo cadastro; séries e vídeos ficam nos outros arquivos de dados.
 
 Veja as configurações mínimas, recomendadas e os requisitos por provedor em [Instalação e uso](docs/INSTALACAO_E_USO.md).
 
@@ -60,7 +72,7 @@ Siga o guia completo para baixar modelos, instalar nós ausentes do ComfyUI, sel
 - Configurações e chaves de API ficam em `data/settings.json` no seu computador. Não publique nem envie esse arquivo.
 - Séries, histórico, mídia, exportações e backups locais não fazem parte do código-fonte. O `.gitignore` exclui essas pastas e arquivos para reduzir o risco de publicar dados pessoais, credenciais ou conteúdo protegido.
 - Antes de enviar mudanças ao Git, revise `git status` e confirme que nenhum arquivo pessoal ou chave está na lista.
-- Por padrão o servidor escuta em `0.0.0.0:8787`, o que pode expô-lo a outros dispositivos na rede local. Use em uma rede confiável; não encaminhe a porta para a internet nem exponha o serviço publicamente sem adicionar autenticação e controles de segurança.
+- Por padrão o servidor escuta somente em `127.0.0.1:8787`, neste PC. A tela de login protege as rotas do estúdio; as sessões expiram quando o servidor é reiniciado ou após 12 horas. Não exponha o serviço à internet. Se mudar `HOST` para permitir acesso de outros dispositivos, use apenas uma rede confiável: o servidor local não configura HTTPS.
 - Chaves de API podem gerar custos conforme os termos e preços do provedor. Confira sua conta antes de ativar geração na nuvem.
 
 ## Estrutura

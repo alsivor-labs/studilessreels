@@ -43,12 +43,28 @@ svg.fill{fill:currentColor;stroke:none}
 .dot{width:8px;height:8px;border-radius:50%;background:#d4d4d8;flex:none}
 .dot.ok{background:#22c55e}.dot.bad{background:#f59e0b}
 .user{display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid var(--line);color:var(--mute);font-size:15px}
+.user-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-logout{font-size:13px;color:var(--mute);padding:8px;border-radius:8px}.user-logout:hover{background:var(--soft);color:var(--ink)}
 .av{width:38px;height:38px;border-radius:50%;background:var(--pl);color:var(--pt);display:grid;place-items:center;font-weight:600}
 .main{min-width:0;display:flex;flex-direction:column}
 .top{height:73px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 30px;gap:10px;font-size:17px;color:var(--mute)}
 .top b{font-weight:500;color:var(--ink)}
 .top .mobile-logo{display:none}
 .content{padding:30px 30px 80px;width:100%}
+.auth-required .app{display:none}
+.auth-shell{display:none;min-height:100vh;padding:28px;place-items:center;background:radial-gradient(ellipse at 15% 15%,#f3ebff 0,transparent 42%),radial-gradient(ellipse at 90% 85%,#eff6ff 0,transparent 38%),#fafafd}
+.auth-required .auth-shell{display:grid}
+.auth-card{width:min(100%,460px);background:#fff;border:1px solid var(--line);border-radius:22px;padding:36px;box-shadow:0 18px 60px rgba(35,18,65,.08)}
+.auth-brand{display:flex;align-items:center;gap:11px;font-family:"DM Sans",Inter,sans-serif;font-size:25px;font-weight:700;margin-bottom:34px}
+.auth-mark{width:42px;height:42px;border-radius:13px;background:var(--pl);color:var(--p);display:grid;place-items:center}
+.auth-brand svg{width:25px;height:25px}
+.auth-card h1{font-size:29px;line-height:1.15;margin:0 0 9px}
+.auth-card .auth-sub{color:var(--mute);line-height:1.55;margin:0 0 25px}
+.auth-card .field{margin-bottom:17px}.auth-card .label{font-size:14px;margin-bottom:8px}.auth-card .input{height:48px;font-size:15px}
+.auth-note{padding:12px 14px;background:var(--soft);border-radius:11px;color:var(--mute);font-size:13px;line-height:1.5;margin-top:18px}
+.auth-error{min-height:20px;color:var(--err);font-size:13px;margin:-5px 0 12px}
+.auth-card .btn{width:100%;height:48px;font-size:15px}
+.auth-offline{color:var(--err);text-align:center;margin:20px}
 .narrow{max-width:780px;margin:0 auto}
 .wide{max-width:1180px;margin:0 auto}
 
@@ -74,6 +90,7 @@ svg.fill{fill:currentColor;stroke:none}
 .input:focus,.textarea:focus,.select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(112,8,231,.12)}
 .select{appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 16px center;padding-right:44px}
 .help{display:flex;justify-content:space-between;gap:12px;margin-top:9px;color:var(--mute);font-size:16px}
+.help span{min-width:0;overflow-wrap:anywhere}
 .card{border:1px solid var(--line);border-radius:var(--r);background:#fff}
 .empty{border:1px dashed var(--line2);border-radius:var(--r);padding:48px 24px;text-align:center;color:var(--mute)}
 .empty h3{color:var(--ink);margin:12px 0 6px;font-size:22px}
@@ -383,13 +400,14 @@ details summary{cursor:pointer;color:var(--ink2);font-weight:600;font-size:15px;
 }
 </style>
 </head>
-<body>
+<body class="auth-required">
+<div class="auth-shell"><div id="auth-screen" class="auth-card"></div></div>
 <div class="app">
   <aside class="side">
     <a class="logo" href="#/series"><svg class="i" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>HistóriasStudio</a>
     <nav class="nav" id="nav"></nav>
     <div class="side-bottom">
-      <div class="user"><div class="av">A</div><div style="flex:1">Alan Passos</div></div>
+      <div class="user"><div class="av" id="userInitial">?</div><div class="user-name" id="userName">Usuário</div><button class="user-logout" type="button" onclick="logout()" title="Sair da conta">Sair</button></div>
     </div>
   </aside>
   <div class="main">
@@ -439,8 +457,48 @@ async function api(path, opts={}) {
   if (o.json !== undefined) { o.method = o.method || 'POST'; o.body = JSON.stringify(o.json); o.headers['Content-Type'] = 'application/json'; }
   const r = await fetch(path, o);
   let j = null; try { j = await r.json(); } catch (e) {}
-  if (!r.ok) throw new Error((j && j.error) || ('Erro ' + r.status));
+  if (!r.ok) { if (r.status === 401 && !path.startsWith('/api/auth/')) showAuth({setup_needed:false}, 'Sua sessão terminou. Entre novamente.'); throw new Error((j && j.error) || ('Erro ' + r.status)); }
   return j;
+}
+let CURRENT_USER = null;
+function showAuth(state, message='') {
+  const setup = !!state?.setup_needed;
+  document.body.classList.add('auth-required');
+  $('#auth-screen').innerHTML = `<div class="auth-brand"><span class="auth-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></span>Histórias Studio</div>
+    <h1>${setup ? 'Crie seu acesso local' : 'Que bom ter você de volta'}</h1>
+    <p class="auth-sub">${setup ? 'Cadastre o usuário deste computador para abrir seu estúdio.' : 'Entre para continuar no seu estúdio neste computador.'}</p>
+    <form onsubmit="submitAuth(event)">
+      ${setup ? `<div class="field"><label class="label" for="auth-name">Seu nome</label><input class="input" id="auth-name" name="name" autocomplete="name" required minlength="2" maxlength="60" placeholder="Como quer ser chamado?"></div>` : ''}
+      <div class="field"><label class="label" for="auth-username">Usuário</label><input class="input" id="auth-username" name="username" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" placeholder="Ex.: allan" autofocus></div>
+      <div class="field"><label class="label" for="auth-password">Senha</label><input class="input" id="auth-password" name="password" type="password" autocomplete="${setup ? 'new-password' : 'current-password'}" required minlength="${setup ? 10 : 1}" maxlength="200" placeholder="${setup ? 'Pelo menos 10 caracteres' : 'Sua senha local'}"></div>
+      ${setup ? `<div class="field"><label class="label" for="auth-confirm">Confirme a senha</label><input class="input" id="auth-confirm" name="confirm" type="password" autocomplete="new-password" required minlength="10" maxlength="200" placeholder="Digite a senha novamente"></div>` : ''}
+      <div class="auth-error" id="auth-error" role="alert">${esc(message)}</div>
+      <button class="btn" type="submit">${setup ? 'Criar usuário e entrar' : 'Entrar'}</button>
+    </form>
+    <div class="auth-note">Seu acesso fica salvo neste PC. A senha é armazenada como hash; não é enviada a nenhum serviço externo. O estúdio e os arquivos continuam locais.</div>`;
+}
+async function submitAuth(event) {
+  event.preventDefault();
+  const setup = !!document.getElementById('auth-name');
+  const form = event.currentTarget;
+  const error = $('#auth-error');
+  const button = form.querySelector('button[type="submit"]');
+  const username = form.elements.username.value.trim();
+  const password = form.elements.password.value;
+  if (setup && password !== form.elements.confirm.value) { error.textContent = 'As senhas não são iguais.'; return; }
+  button.disabled = true; error.textContent = '';
+  try {
+    const result = await api(setup ? '/api/auth/register' : '/api/auth/login', {json:{username,password,...(setup ? {name:form.elements.name.value.trim()} : {})}});
+    CURRENT_USER = result.user;
+    document.body.classList.remove('auth-required');
+    $('#userName').textContent = CURRENT_USER.name;
+    $('#userInitial').textContent = [...CURRENT_USER.name.trim()][0]?.toLocaleUpperCase() || '?';
+    await startStudio();
+  } catch (e) { error.textContent = e.message; button.disabled = false; }
+}
+async function logout() {
+  try { await api('/api/auth/logout', {json:{}}); } catch (e) {}
+  CURRENT_USER = null; showAuth({setup_needed:false});
 }
 function toast(msg, ms=3200) {
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
@@ -1539,11 +1597,24 @@ async function saveSettings() {
 }
 
 /* ------------------------------------------------------------------ início */
-(async function init() {
+async function startStudio() {
   renderNav('series'); renderServices();
   try { S.config = await api('/api/config'); } catch (e) { $('#view').innerHTML = `<div class="narrow empty"><h3>Servidor indisponível</h3><p>${esc(e.message)}</p></div>`; return; }
   if (D.niche && !D.niche_preset) S.nicheTab = 'custom';
   route(); loadServices(); setInterval(loadServices, 20000);
+}
+(async function init() {
+  try {
+    const auth = await api('/api/auth/status');
+    if (!auth.authenticated) { showAuth(auth); return; }
+    CURRENT_USER = auth.user;
+    $('#userName').textContent = CURRENT_USER.name;
+    $('#userInitial').textContent = [...CURRENT_USER.name.trim()][0]?.toLocaleUpperCase() || '?';
+    document.body.classList.remove('auth-required');
+    await startStudio();
+  } catch (e) {
+    $('#auth-screen').innerHTML = `<div class="auth-brand">Histórias Studio</div><h1>Não foi possível conectar</h1><p class="auth-offline">${esc(e.message)}</p><button class="btn" onclick="location.reload()">Tentar novamente</button>`;
+  }
 })();
 </script>
 </body>
