@@ -1172,12 +1172,14 @@ function viewGuides() {
   <div class="card guide"><h3>Escolha como gerar com IA</h3><p>Para criar um vídeo, configure um provedor de roteiro, um de voz e um de imagem em <b>Configurações → Provedores de IA</b>. Você pode usar serviços locais ou APIs na nuvem. Na configuração local padrão, instale e abra:</p><ul>
     <li><b>Ollama + modelo de texto</b> para escrever roteiro. Instale pelo <a href="https://ollama.com/download" target="_blank" rel="noopener">site do Ollama</a> e baixe um modelo, por exemplo <code>ollama pull qwen3:8b</code>.</li>
     <li><b>VoiceStudio</b> com mecanismo de voz ativo para narrar localmente, ou selecione ElevenLabs/Kie AI e informe sua chave de API.</li>
-    <li><b>ComfyUI</b> para imagens locais — <a href="https://www.comfy.org/download" target="_blank" rel="noopener">baixar ComfyUI</a> — com os modelos <code>z_image_turbo_bf16.safetensors</code>, <code>qwen_3_4b.safetensors</code> e <code>ae.safetensors</code>. Abra o ComfyUI antes de gerar.</li></ul>
-    <p>Se preferir provedores na nuvem para roteiro, voz e imagem, não precisa instalar Ollama, VoiceStudio nem os modelos de imagem no PC. Configure as chaves em <b>Provedores de IA</b>. Chamadas de API podem ter custo.</p></div>
+    <li><b>ComfyUI</b> para imagens locais — <a href="https://www.comfy.org/download" target="_blank" rel="noopener">baixar ComfyUI</a> — com <code>z_image_turbo_bf16.safetensors</code> em <code>models/diffusion_models</code>, <code>qwen_3_4b.safetensors</code> em <code>models/text_encoders</code> e <code>ae.safetensors</code> em <code>models/vae</code>. Abra o ComfyUI antes de gerar.</li></ul>
+    <p>Se não tiver GPU ou não quiser instalar os modelos, use provedores na nuvem. Selecione, cole a chave e clique em <b>Salvar e testar</b>: <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener">fal.ai</a> (imagem Flux Schnell e movimento Wan 2.2) ou <a href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener">Replicate</a> (imagem Flux Schnell e movimento Wan 2.2). Também estão disponíveis OpenAI, Google Gemini e Kie AI. Configure texto e voz pelos seus provedores atuais. Para não instalar ComfyUI, use música da biblioteca ou envie uma faixa; composição automática com ACE-Step roda pelo ComfyUI. As chaves ficam no seu computador; chamadas podem cobrar por geração/minuto e enviar seus prompts/imagens ao serviço escolhido.</p></div>
   <div class="card guide"><h3>Itens opcionais para movimento e música</h3><ul>
-    <li><b>Movimento na imagem</b> (zoom e câmera) não precisa de outro modelo de IA. Para animar cada cena como vídeo, escolha <b>Movimento por vídeo</b> e configure ComfyUI/LTX-2 localmente ou Kie AI na nuvem. O LTX-2 local requer GPU com bastante VRAM; os modelos podem ocupar dezenas de GB.</li>
+    <li><b>Movimento na imagem</b> (zoom e câmera) não precisa de outro modelo de IA. Para animar cada cena como vídeo, escolha <b>Movimento por vídeo</b> e configure ComfyUI/LTX-2 localmente ou Kie AI, fal.ai ou Replicate na nuvem. O LTX-2 local requer GPU com bastante VRAM; os modelos podem ocupar dezenas de GB.</li>
     <li><b>Trilha automática:</b> ACE-Step no ComfyUI e o modelo <code>ace_step_1.5_turbo_aio.safetensors</code>. Também dá para usar músicas enviadas/importadas na biblioteca.</li>
-    <li>Para movimento por ComfyUI, os modelos do workflow incluem <code>ltx-2-19b-dev-fp8.safetensors</code>, <code>ltx-2-19b-distilled-lora-384.safetensors</code> e <code>ltx-2-spatial-upscaler-x2-1.0.safetensors</code>. Abra o workflow no ComfyUI e instale pelo Manager qualquer nó ausente.</li></ul>
+    <li>Para movimento por ComfyUI, baixe também <code>ltx-2-19b-dev-fp8.safetensors</code>, <code>gemma_3_12B_it_fp4_mixed.safetensors</code>, <code>ltx-2-19b-distilled-lora-384.safetensors</code> e <code>ltx-2-spatial-upscaler-x2-1.0.safetensors</code>. Coloque-os em <code>models/checkpoints</code>, <code>models/text_encoders</code>, <code>models/loras</code> e <code>models/upscale_models</code>, respectivamente.</li>
+    <li>Para gerar música com IA, o workflow usa <code>ace_step_1.5_turbo_aio.safetensors</code> em <code>models/checkpoints</code>.</li></ul>
+    <p>Baixe os arquivos pelos repositórios oficiais <a href="https://huggingface.co/Comfy-Org/Z-Image-Turbo" target="_blank" rel="noopener">Z-Image Turbo</a>, <a href="https://huggingface.co/Comfy-Org/ltx-2" target="_blank" rel="noopener">LTX-2 da Comfy-Org</a> e <a href="https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files" target="_blank" rel="noopener">ACE-Step 1.5</a>; confira a licença de cada modelo. Instale/abra o <a href="https://docs.comfy.org/manager/install" target="_blank" rel="noopener">ComfyUI Manager</a>, atualize o ComfyUI e use <b>Manager → Custom Nodes</b> para instalar os nós que aparecerem como ausentes; reinicie o ComfyUI depois. Os workflows deste projeto usam os nós LTX e ACE-Step incluídos nas versões recentes do ComfyUI, portanto não exigem extensões adicionais em uma instalação atualizada. Para usar somente provedores na nuvem, não instale ComfyUI, extensões ou esses modelos.</p>
     <p>Um PC sem GPU dedicada pode usar provedores na nuvem para as etapas de IA; FFmpeg continua necessário para montar o MP4.</p></div>
   <div class="card guide"><h3>Como criar sua primeira série</h3><ol>
     <li>Vá em <b>Séries</b> e clique em <b>Criar nova série</b>.</li>
@@ -1346,11 +1348,13 @@ async function viewProviders() {
     <div style="margin-top:6px"><button class="btn sm ghost" onclick="testProvider('script', this)">${ic('zap')}Salvar e testar</button><span class="testline" id="t_script"></span></div>
   </div>
   <div class="card psec"><h3>Imagens</h3><p>Quem desenha as cenas e as fichas dos personagens. OpenAI e Gemini usam a ficha de cada personagem como referência, o que mantém o mesmo rosto e a mesma roupa em todas as cenas.</p>
-    <div class="modes" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+    <div class="modes" style="grid-template-columns:repeat(3,minmax(0,1fr))">
       ${card('image_provider', 'comfyui', 'ComfyUI', local, 'Roda no seu PC (Z-Image Turbo), sem custo.')}
       ${card('image_provider', 'openai', 'OpenAI', cloud, 'O gerador de imagens do ChatGPT.')}
       ${card('image_provider', 'gemini', 'Google Gemini', cloud, 'Nano Banana, ótimo para manter personagens.')}
       ${card('image_provider', 'kie', 'Kie AI', cloud, 'Gere imagens com Imagen 4 Fast pela API do Kie AI.')}
+      ${card('image_provider', 'fal', 'fal.ai', cloud, 'Flux Schnell hospedado; não precisa de GPU local.')}
+      ${card('image_provider', 'replicate', 'Replicate', cloud, 'Flux Schnell hospedado; não precisa de GPU local.')}
     </div>
     <div class="pgroup ${st.image_provider === 'comfyui' ? 'on' : ''}" data-for="image_provider:comfyui"><div class="note">Usa o <b>workflow.json</b> do seu ComfyUI. O ComfyUI precisa estar aberto.</div></div>
     <div class="pgroup ${st.image_provider === 'openai' ? 'on' : ''}" data-for="image_provider:openai">
@@ -1363,6 +1367,12 @@ async function viewProviders() {
     <div class="pgroup ${st.image_provider === 'kie' ? 'on' : ''}" data-for="image_provider:kie">
       ${key('kie_key_image', 'Chave da API (Kie AI)', 'https://kie.ai/api-key', 'kie_key')}
       <div class="field"><div class="label">Modelo de imagem</div><select class="select" id="kie_image_model">${[['google/imagen4-fast','Google Imagen 4 Fast'],['google/imagen4','Google Imagen 4'],['google/imagen4-ultra','Google Imagen 4 Ultra']].map(([v,n]) => `<option value="${v}" ${st.kie_image_model === v ? 'selected' : ''}>${n}</option>`).join('')}${['google/imagen4-fast','google/imagen4','google/imagen4-ultra'].includes(st.kie_image_model) ? '' : `<option selected>${esc(st.kie_image_model)}</option>`}</select><div class="help">A chave é compartilhada com roteiro e voz Kie AI.</div></div></div>
+    <div class="pgroup ${st.image_provider === 'fal' ? 'on' : ''}" data-for="image_provider:fal">
+      ${key('fal_key', 'Chave da API (fal.ai)', 'https://fal.ai/dashboard/keys')}
+      <div class="field"><div class="label">Modelo de imagem</div><input class="input" id="fal_image_model" value="${esc(st.fal_image_model || 'fal-ai/flux/schnell')}"><div class="help"><span>Padrão: <code>fal-ai/flux/schnell</code>. Outro endpoint precisa aceitar <code>prompt</code>, <code>image_size</code>, <code>num_images</code>, <code>output_format</code> e <code>seed</code>.</span></div></div></div>
+    <div class="pgroup ${st.image_provider === 'replicate' ? 'on' : ''}" data-for="image_provider:replicate">
+      ${key('replicate_key', 'Token da API (Replicate)', 'https://replicate.com/account/api-tokens')}
+      <div class="field"><div class="label">Modelo de imagem</div><input class="input" id="replicate_image_model" value="${esc(st.replicate_image_model || 'black-forest-labs/flux-schnell')}"><div class="help"><span>Padrão: <code>black-forest-labs/flux-schnell</code>. Outro modelo precisa aceitar <code>prompt</code>, <code>aspect_ratio</code>, <code>output_format</code>, <code>num_outputs</code> e <code>seed</code>.</span></div></div></div>
     <div class="pgroup ${st.image_provider !== 'comfyui' ? 'on' : ''}" data-for="image_provider:cloud" id="img_parallel_box">
       <div class="field" style="max-width:260px"><div class="label">Imagens ao mesmo tempo</div><input class="input" type="number" min="1" max="8" id="image_parallel" value="${st.image_parallel}"><div class="help"><span>Mais rápido; diminua se der erro de limite.</span></div></div></div>
     <div style="margin-top:6px"><button class="btn sm ghost" onclick="testProvider('image', this)">${ic('zap')}Salvar e testar</button><span class="testline" id="t_image"></span></div>
@@ -1372,11 +1382,21 @@ async function viewProviders() {
     <div class="modes">
       ${card('motion_provider', 'comfyui', 'ComfyUI · LTX-2', local, 'Gera localmente. Precisa de GPU e do workflow LTX-2.')}
       ${card('motion_provider', 'kie', 'Kie AI · Wan 2.2', cloud, 'Gera na nuvem com sua chave Kie AI. Cobrado por segundo de vídeo.')}
+      ${card('motion_provider', 'fal', 'fal.ai · Wan 2.2', cloud, 'Gera na nuvem usando sua chave fal.ai e saldo da conta.')}
+      ${card('motion_provider', 'replicate', 'Replicate · Wan 2.2', cloud, 'Gera na nuvem usando seu token e cobrança do Replicate.')}
     </div>
     <div class="pgroup ${st.motion_provider === 'comfyui' ? 'on' : ''}" data-for="motion_provider:comfyui"><div class="note">Usa o workflow <b>workflow_video.json</b> no ComfyUI.</div></div>
     <div class="pgroup ${st.motion_provider === 'kie' ? 'on' : ''}" data-for="motion_provider:kie">
       ${key('kie_key_motion', 'Chave da API (Kie AI)', 'https://kie.ai/api-key', 'kie_key')}
       <div class="field"><div class="label">Resolução do movimento</div><select class="select" id="kie_motion_resolution"><option value="480p" ${st.kie_motion_resolution === '480p' ? 'selected' : ''}>480p · menor custo</option><option value="720p" ${(!st.kie_motion_resolution || st.kie_motion_resolution === '720p') ? 'selected' : ''}>720p · melhor definição</option></select><div class="help">Wan 2.2 Image-to-Video Turbo · proporção vertical 9:16.</div></div>
+    </div>
+    <div class="pgroup ${st.motion_provider === 'fal' ? 'on' : ''}" data-for="motion_provider:fal">
+      ${key('fal_key_motion', 'Chave da API (fal.ai)', 'https://fal.ai/dashboard/keys', 'fal_key')}
+      <div class="field"><div class="label">Modelo de movimento</div><input class="input" id="fal_motion_model" value="${esc(st.fal_motion_model || 'fal-ai/wan/v2.2-a14b/image-to-video')}"><div class="help">Modelo Wan 2.2 Image-to-Video da fal.ai; outro endpoint precisa aceitar <code>image_url</code>, <code>prompt</code>, quadros, FPS, resolução e proporção vertical.</div></div>
+    </div>
+    <div class="pgroup ${st.motion_provider === 'replicate' ? 'on' : ''}" data-for="motion_provider:replicate">
+      ${key('replicate_key_motion', 'Token da API (Replicate)', 'https://replicate.com/account/api-tokens', 'replicate_key')}
+      <div class="field"><div class="label">Modelo de movimento</div><input class="input" id="replicate_motion_model" value="${esc(st.replicate_motion_model || 'wan-video/wan-2.2-i2v-fast')}"><div class="help">Padrão Wan 2.2 Image-to-Video. Outro endpoint precisa aceitar <code>image</code>, <code>prompt</code>, <code>go_fast</code>, <code>num_frames</code>, <code>resolution</code>, <code>frames_per_second</code> e <code>sample_shift</code>.</div></div>
     </div>
     <div style="margin-top:6px"><button class="btn sm ghost" onclick="testProvider('motion', this)">${ic('zap')}Verificar configuração</button><span class="testline" id="t_motion"></span></div>
   </div>
@@ -1408,7 +1428,7 @@ function providerPayload() {
   const sel = g => (document.querySelector(`.mode.on[data-grp="${g}"]`) || {}).dataset.id;
   const val = id => { const e = document.getElementById(id); return e ? e.value : undefined; };
   const d = {script_provider:sel('script_provider'), voice_provider:sel('voice_provider'), image_provider:sel('image_provider'), motion_provider:sel('motion_provider')};
-  ['ollama_model','openai_model','gemini_model','compat_base_url','compat_model','tts_model','eleven_model','kie_model','kie_script_model','kie_image_model','kie_motion_resolution','openai_image_model','openai_image_quality','gemini_image_model','image_parallel'].forEach(k => { const v = val(k); if (v !== undefined) d[k] = v; });
+  ['ollama_model','openai_model','gemini_model','compat_base_url','compat_model','tts_model','eleven_model','kie_model','kie_script_model','kie_image_model','kie_motion_resolution','openai_image_model','openai_image_quality','gemini_image_model','fal_image_model','fal_motion_model','replicate_image_model','replicate_motion_model','image_parallel'].forEach(k => { const v = val(k); if (v !== undefined) d[k] = v; });
   document.querySelectorAll('input[data-key]').forEach(e => { if (e.value.trim()) d[e.dataset.key] = e.value.trim(); });
   return d;
 }

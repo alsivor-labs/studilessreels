@@ -8,7 +8,7 @@ Aplicação local para planejar séries de histórias, gerar narração e criar 
 
 - Cria séries e roteiros em episódios, com verificação/correção automática; revisar o roteiro manualmente é opcional.
 - Gera narração por serviço local ou provedor compatível.
-- Cria imagens e, opcionalmente, clipes de movimento com workflows do ComfyUI.
+- Cria imagens com ComfyUI, OpenAI, Google Gemini, Kie AI, fal.ai ou Replicate; o movimento pode usar ComfyUI/LTX-2, Kie AI, fal.ai ou Replicate.
 - Monta vídeos verticais com legendas, música e efeitos usando FFmpeg.
 - Guarda séries, configurações, trabalhos e exportações no computador.
 - Pode agendar a produção diária enquanto o computador e o servidor estiverem ligados.

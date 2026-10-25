@@ -34,6 +34,8 @@ GEMINI_URL = os.getenv('GEMINI_URL', 'https://generativelanguage.googleapis.com'
 ELEVEN_URL = os.getenv('ELEVEN_URL', 'https://api.elevenlabs.io').rstrip('/')
 KIE_URL = os.getenv('KIE_URL', 'https://api.kie.ai').rstrip('/')
 KIE_UPLOAD_URL = os.getenv('KIE_UPLOAD_URL', 'https://kieai.redpandaai.co').rstrip('/')
+FAL_URL = os.getenv('FAL_URL', 'https://queue.fal.run').rstrip('/')
+REPLICATE_URL = os.getenv('REPLICATE_URL', 'https://api.replicate.com').rstrip('/')
 CLIENT_ID = 'historias-studio-' + uuid.uuid4().hex[:8]
 
 IMG_WF = json.loads((ROOT / 'workflow.json').read_text(encoding='utf-8'))
@@ -166,13 +168,21 @@ DEFAULT_SETTINGS = {
     'openai_image_model': 'gpt-image-2', 'openai_image_quality': 'medium',
     'gemini_image_model': 'gemini-3.1-flash-image',
     'kie_image_model': 'google/imagen4-fast',
+    'fal_image_model': 'fal-ai/flux/schnell',
+    'replicate_image_model': 'black-forest-labs/flux-schnell',
+    'fal_motion_model': 'fal-ai/wan/v2.2-a14b/image-to-video',
+    'replicate_motion_model': 'wan-video/wan-2.2-i2v-fast',
+    'fal_key': '', 'replicate_key': '',
     'image_parallel': 3,             # imagens simultâneas nos provedores em nuvem
 }
-SECRET_KEYS = ('openai_key', 'gemini_key', 'compat_key', 'eleven_key', 'kie_key')
+SECRET_KEYS = ('openai_key', 'gemini_key', 'compat_key', 'eleven_key', 'kie_key', 'fal_key', 'replicate_key')
 SCRIPT_PROVIDERS = {'ollama': 'Ollama (local)', 'openai': 'OpenAI', 'gemini': 'Google Gemini',
                     'compatible': 'Compatível com OpenAI', 'kie': 'Kie AI'}
 VOICE_PROVIDERS = {'voicestudio': 'VoiceStudio (local)', 'elevenlabs': 'ElevenLabs', 'kie': 'Kie AI'}
 IMAGE_PROVIDERS = {'comfyui': 'ComfyUI (local)', 'openai': 'OpenAI', 'gemini': 'Google Gemini', 'kie': 'Kie AI'}
+IMAGE_PROVIDERS.update({'fal': 'fal.ai', 'replicate': 'Replicate'})
+MOTION_PROVIDERS = {'comfyui': 'ComfyUI · LTX-2', 'kie': 'Kie AI · Wan 2.2',
+                    'fal': 'fal.ai · Wan 2.2', 'replicate': 'Replicate · Wan 2.2'}
 
 # --------------------------------------------------------------------------- persistência
 
@@ -309,13 +319,17 @@ def service_status():
     out['script_provider'] = {'id': sp, 'name': SCRIPT_PROVIDERS.get(sp, sp),
                               'ok': out['ollama']['ok'] if sp == 'ollama' else bool(SETTINGS.get(need.get(sp, ''), '') or (sp == 'kie' and SETTINGS.get('compat_key')))}
     ip = SETTINGS.get('image_provider', 'comfyui')
+    image_key = {'openai': 'openai_key', 'gemini': 'gemini_key', 'kie': 'kie_key',
+                 'fal': 'fal_key', 'replicate': 'replicate_key'}.get(ip)
     out['image_provider'] = {'id': ip, 'name': IMAGE_PROVIDERS.get(ip, ip),
-                             'ok': out['comfyui']['ok'] if ip == 'comfyui' else bool(SETTINGS.get('kie_key' if ip == 'kie' else ip + '_key'))}
+                             'ok': out['comfyui']['ok'] if ip == 'comfyui' else bool(SETTINGS.get(image_key or ''))}
     out['voice_provider'] = {'id': vp, 'name': VOICE_PROVIDERS.get(vp, vp),
                              'ok': out['voicestudio']['ok'] if vp == 'voicestudio' else bool(SETTINGS.get('kie_key' if vp == 'kie' else 'eleven_key'))}
     mp = SETTINGS.get('motion_provider', 'comfyui')
-    out['motion_provider'] = {'id': mp, 'name': 'Kie AI · Wan 2.2' if mp == 'kie' else 'ComfyUI · LTX-2',
-                              'ok': bool(SETTINGS.get('kie_key') or SETTINGS.get('compat_key')) if mp == 'kie' else VID_WF is not None}
+    motion_key = {'kie': 'kie_key', 'fal': 'fal_key', 'replicate': 'replicate_key'}.get(mp, '')
+    out['motion_provider'] = {'id': mp, 'name': MOTION_PROVIDERS.get(mp, mp),
+                              'ok': bool(SETTINGS.get(motion_key) or (mp == 'kie' and SETTINGS.get('compat_key')))
+                              if mp in ('kie', 'fal', 'replicate') else VID_WF is not None}
     out['motion_workflow'] = {'ok': VID_WF is not None}
     return out
 
@@ -496,6 +510,114 @@ def kie_image(prompt, negative=''):
         return _to_png(response.read())
 
 
+def _first_media_url(value, keys=('url', 'uri')):
+    if isinstance(value, str) and value.startswith(('https://', 'http://', 'data:')):
+        return value
+    if isinstance(value, dict):
+        for key in keys:
+            found = value.get(key)
+            if isinstance(found, str) and found.startswith(('https://', 'http://', 'data:')):
+                return found
+        for child in value.values():
+            found = _first_media_url(child, keys)
+            if found:
+                return found
+    if isinstance(value, list):
+        for child in value:
+            found = _first_media_url(child, keys)
+            if found:
+                return found
+    return None
+
+
+def fal_queue(model, inputs, timeout=1800, cancelled=lambda: False):
+    key = _need('fal_key', 'a chave do fal.ai')
+    headers = {'Authorization': 'Key ' + key}
+    base_path = '/' + model.strip().strip('/')
+    accepted = external(FAL_URL, base_path, inputs, timeout=90, headers=headers, auth=False)
+    request_id = accepted.get('request_id') or accepted.get('requestId')
+    if not request_id:
+        raise RuntimeError('fal.ai não retornou o identificador da tarefa')
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if cancelled():
+            raise InterruptedError('cancelado')
+        time.sleep(3)
+        status = external(FAL_URL, base_path + '/requests/' + urllib.parse.quote(str(request_id), safe='') + '/status',
+                          timeout=45, headers=headers, auth=False)
+        state = str(status.get('status') or '').upper()
+        if state == 'COMPLETED':
+            return external(FAL_URL, base_path + '/requests/' + urllib.parse.quote(str(request_id), safe=''),
+                            timeout=60, headers=headers, auth=False)
+        if state in ('FAILED', 'ERROR', 'CANCELLED'):
+            raise RuntimeError('fal.ai falhou: ' + str(status.get('error') or status.get('detail') or state)[:400])
+    raise TimeoutError('fal.ai demorou demais para concluir a geração')
+
+
+def fal_image(prompt, negative='', seed=0, refs=(), ref_names=(), cancelled=lambda: False):
+    model = (SETTINGS.get('fal_image_model') or 'fal-ai/flux/schnell').strip()
+    text = cloud_prompt(prompt, negative, ref_names) if refs else cloud_prompt(prompt, negative, ())
+    ans = fal_queue(model, {'prompt': text,
+                            'image_size': {'width': int(SETTINGS.get('image_width') or 768),
+                                           'height': int(SETTINGS.get('image_height') or 1344)},
+                            'num_images': 1, 'output_format': 'png', 'seed': int(seed) % (2 ** 31)}, cancelled=cancelled)
+    url = _first_media_url(ans.get('images') or ans, ('url', 'uri'))
+    if not url:
+        raise RuntimeError('fal.ai concluiu sem devolver uma imagem')
+    with urllib.request.urlopen(url, timeout=120) as response:
+        return _to_png(response.read())
+
+
+def replicate_prediction(model, inputs, timeout=1800, cancelled=lambda: False):
+    key = _need('replicate_key', 'o token da API do Replicate')
+    model = model.strip().strip('/')
+    if not re.fullmatch(r'[A-Za-z0-9_-]+/[A-Za-z0-9_.:-]+', model):
+        raise RuntimeError('O modelo Replicate deve estar no formato proprietário/modelo')
+    headers = {'Authorization': 'Bearer ' + key, 'Prefer': 'wait=60'}
+    ans = external(REPLICATE_URL, '/v1/models/' + model + '/predictions', {'input': inputs},
+                   timeout=95, headers=headers, auth=False)
+    prediction_id = ans.get('id')
+    if not prediction_id:
+        raise RuntimeError('Replicate não retornou o identificador da tarefa')
+    state = str(ans.get('status') or '').lower()
+    deadline = time.time() + timeout
+    while state not in ('succeeded', 'failed', 'canceled', 'cancelled') and time.time() < deadline:
+        if cancelled():
+            raise InterruptedError('cancelado')
+        time.sleep(3)
+        ans = external(REPLICATE_URL, '/v1/predictions/' + urllib.parse.quote(str(prediction_id), safe=''),
+                       timeout=60, headers=headers, auth=False)
+        state = str(ans.get('status') or '').lower()
+    if state != 'succeeded':
+        detail = ans.get('error') or state or 'tempo limite'
+        raise RuntimeError('Replicate falhou: ' + str(detail)[:400])
+    return ans.get('output')
+
+
+def _replicate_image_input(path):
+    # Replicate recommends data URLs for smaller inputs. Compress the local
+    # frame first so image-to-video requests do not embed multi-megabyte PNGs.
+    result = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(path), '-vf',
+                             'scale=768:1344:force_original_aspect_ratio=decrease', '-q:v', '8',
+                             '-f', 'image2pipe', '-vcodec', 'mjpeg', 'pipe:1'],
+                            capture_output=True, timeout=60)
+    if result.returncode or not result.stdout:
+        raise RuntimeError('Não foi possível preparar a imagem para enviar ao Replicate')
+    return 'data:image/jpeg;base64,' + base64.b64encode(result.stdout).decode('ascii')
+
+
+def replicate_image(prompt, negative='', seed=0, refs=(), ref_names=(), cancelled=lambda: False):
+    model = (SETTINGS.get('replicate_image_model') or 'black-forest-labs/flux-schnell').strip()
+    text = cloud_prompt(prompt, negative, ref_names) if refs else cloud_prompt(prompt, negative, ())
+    output = replicate_prediction(model, {'prompt': text, 'aspect_ratio': '9:16', 'output_format': 'png',
+                                          'num_outputs': 1, 'seed': int(seed) % (2 ** 31)}, cancelled=cancelled)
+    url = _first_media_url(output)
+    if not url:
+        raise RuntimeError('Replicate concluiu sem devolver uma imagem')
+    with urllib.request.urlopen(url, timeout=120) as response:
+        return _to_png(response.read())
+
+
 def openai_image(prompt, refs=()):
     key = _need('openai_key', 'a chave da OpenAI')
     model = (SETTINGS.get('openai_image_model') or 'gpt-image-2').strip()
@@ -576,6 +698,10 @@ def make_image(prompt, negative, seed, prefix, refs=(), ref_names=(), cancelled=
         return gemini_image(cloud_prompt(prompt, negative, ref_names), list(refs))
     if prov == 'kie':
         return kie_image(cloud_prompt(prompt, negative, ref_names) if refs else prompt, negative)
+    if prov == 'fal':
+        return fal_image(prompt, negative, seed, refs, ref_names, cancelled)
+    if prov == 'replicate':
+        return replicate_image(prompt, negative, seed, refs, ref_names, cancelled)
     return generate_image(prompt, negative, seed, prefix, cancelled)
 
 
@@ -617,6 +743,53 @@ def animate_image_kie(image_path, motion_prompt, seed, cancelled=lambda: False):
     if len(blob) < 1000:
         raise RuntimeError('Kie AI retornou um arquivo de vídeo vazio')
     return blob, '.mp4'
+
+
+def _download_media(url, timeout=180):
+    if str(url).startswith('data:'):
+        try:
+            return base64.b64decode(str(url).split(',', 1)[1]), '.mp4'
+        except Exception as exc:
+            raise RuntimeError('O provedor retornou um arquivo base64 inválido') from exc
+    req = urllib.request.Request(url, headers={'User-Agent': 'HistoriasStudio/1.0'})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        blob = response.read()
+        mime = response.headers.get('Content-Type', '')
+    if len(blob) < 1000:
+        raise RuntimeError('O provedor retornou um arquivo de vídeo vazio')
+    ext = '.webm' if 'webm' in mime.lower() or str(url).lower().split('?', 1)[0].endswith('.webm') else '.mp4'
+    return blob, ext
+
+
+def fal_animate_image(image_path, motion_prompt, seed, frames, cancelled=lambda: False):
+    if cancelled():
+        raise InterruptedError('cancelado')
+    model = (SETTINGS.get('fal_motion_model') or 'fal-ai/wan/v2.2-a14b/image-to-video').strip()
+    num_frames = max(17, min(161, int(round(max(1, frames) / FPS * 16))))
+    inputs = {'image_url': _replicate_image_input(image_path), 'prompt': motion_prompt,
+              'num_frames': num_frames, 'frames_per_second': 16, 'resolution': '480p',
+              'aspect_ratio': 'auto', 'seed': int(seed) % (2 ** 31), 'enable_prompt_expansion': False}
+    result = fal_queue(model, inputs, timeout=1800, cancelled=cancelled)
+    url = _first_media_url(result.get('video') or result, ('url', 'uri'))
+    if not url:
+        raise RuntimeError('fal.ai concluiu a animação sem devolver URL do vídeo')
+    return _download_media(url)
+
+
+def replicate_animate_image(image_path, motion_prompt, seed, frames, cancelled=lambda: False):
+    if cancelled():
+        raise InterruptedError('cancelado')
+    model = (SETTINGS.get('replicate_motion_model') or 'wan-video/wan-2.2-i2v-fast').strip()
+    # The default Wan 2.2 I2V endpoint accepts 81-121 frames and uses vertical 480p.
+    num_frames = max(81, min(121, int(round(max(1, frames) / FPS * 16))))
+    output = replicate_prediction(model, {'image': _replicate_image_input(image_path), 'prompt': motion_prompt,
+                                           'go_fast': True, 'num_frames': num_frames,
+                                           'resolution': '480p', 'frames_per_second': 16,
+                                           'sample_shift': 12}, timeout=1800, cancelled=cancelled)
+    url = _first_media_url(output)
+    if not url:
+        raise RuntimeError('Replicate concluiu a animação sem devolver URL do vídeo')
+    return _download_media(url)
 
 
 def animate_image(image_path, motion_prompt, seed, frames, prefix, cancelled=lambda: False):
@@ -1437,7 +1610,7 @@ def produce(v):
     mode = motion_mode(fx)
     animate = [i for i in range(1, n + 1) if mode == 'video' or (fx.get('hook') and i == 1)]
     motion_provider = SETTINGS.get('motion_provider') or 'comfyui'
-    if animate and (motion_provider == 'kie' or VID_WF is not None):
+    if animate and (motion_provider in ('kie', 'fal', 'replicate') or VID_WF is not None):
         _upd(v, status='motion', progress=50)
         for k, i in enumerate(animate, 1):
             check()
@@ -1447,6 +1620,12 @@ def produce(v):
             if motion_provider == 'kie':
                 blob, ext = animate_image_kie(work / f'scene_{i:02d}.png', build_motion_prompt(cfg, script, sc),
                                               v['seed'] + i, cancelled)
+            elif motion_provider == 'fal':
+                blob, ext = fal_animate_image(work / f'scene_{i:02d}.png', build_motion_prompt(cfg, script, sc),
+                                              v['seed'] + i, frames[i - 1], cancelled)
+            elif motion_provider == 'replicate':
+                blob, ext = replicate_animate_image(work / f'scene_{i:02d}.png', build_motion_prompt(cfg, script, sc),
+                                                    v['seed'] + i, frames[i - 1], cancelled)
             else:
                 blob, ext = animate_image(work / f'scene_{i:02d}.png', build_motion_prompt(cfg, script, sc),
                                           v['seed'] + i, ltx_frames(frames[i - 1] / FPS),
@@ -1983,10 +2162,12 @@ def test_provider(kind):
             msg = txt
         return {'ok': True, 'detail': f'{model}: {str(msg)[:160]}'}
     if kind == 'motion':
-        if SETTINGS.get('motion_provider', 'comfyui') == 'kie':
-            if not (SETTINGS.get('kie_key') or SETTINGS.get('compat_key')):
-                raise RuntimeError('Configure a chave da API do Kie AI em Configurações › Provedores de IA')
-            return {'ok': True, 'detail': f"Kie AI · Wan 2.2 configurado em {SETTINGS.get('kie_motion_resolution', '720p')}; gerações são cobradas ao criar os vídeos"}
+        provider = SETTINGS.get('motion_provider', 'comfyui')
+        cloud_keys = {'kie': 'kie_key', 'fal': 'fal_key', 'replicate': 'replicate_key'}
+        if provider in cloud_keys:
+            if not (SETTINGS.get(cloud_keys[provider]) or (provider == 'kie' and SETTINGS.get('compat_key'))):
+                raise RuntimeError(f'Configure a chave do {MOTION_PROVIDERS[provider]} em Configurações › Provedores de IA')
+            return {'ok': True, 'detail': f"{MOTION_PROVIDERS[provider]} configurado; consulte o custo na conta do provedor. O modelo será confirmado na primeira geração."}
         if VID_WF is None:
             raise RuntimeError('workflow_video.json não encontrado para o ComfyUI local')
         return {'ok': True, 'detail': 'ComfyUI · LTX-2: workflow encontrado'}
@@ -2009,7 +2190,7 @@ def _public_config():
             'art_styles': [{'id': s['id'], 'name': s['name'], 'preview': prev[s['id']], 'job': STYLE_JOBS.get(s['id'])}
                            for s in STYLES_LIST],
             'caption_styles': [{'id': c['id'], 'name': c['name']} for c in CAPTION_STYLES],
-            'platforms': PLATFORMS, 'motion_available': VID_WF is not None or SETTINGS.get('motion_provider') == 'kie', 'settings': settings_public()}
+            'platforms': PLATFORMS, 'motion_available': VID_WF is not None or SETTINGS.get('motion_provider') in ('kie', 'fal', 'replicate'), 'settings': settings_public()}
 
 
 def _video_public(v):
@@ -2052,7 +2233,7 @@ def route(h, method):
                 h.send(200, service_status()); return True
             if path == '/api/settings':
                 d = settings_public()
-                d['script_providers'], d['voice_providers'], d['image_providers'] = SCRIPT_PROVIDERS, VOICE_PROVIDERS, IMAGE_PROVIDERS
+                d['script_providers'], d['voice_providers'], d['image_providers'], d['motion_providers'] = SCRIPT_PROVIDERS, VOICE_PROVIDERS, IMAGE_PROVIDERS, MOTION_PROVIDERS
                 try:
                     d['ollama_models'] = ollama_models()
                 except Exception:
@@ -2249,6 +2430,7 @@ def route(h, method):
                             SETTINGS[k] = val
                 for k in ('script_provider', 'voice_provider', 'openai_model', 'gemini_model', 'compat_base_url',
                           'compat_model', 'eleven_model', 'kie_model', 'kie_script_model', 'kie_image_model', 'image_provider', 'motion_provider', 'kie_motion_resolution', 'openai_image_model', 'openai_image_quality',
+                          'fal_image_model', 'fal_motion_model', 'replicate_image_model', 'replicate_motion_model',
                           'gemini_image_model'):
                     if k in data:
                         SETTINGS[k] = str(data[k] or '').strip()[:300]
@@ -2258,7 +2440,7 @@ def route(h, method):
                     SETTINGS['voice_provider'] = 'voicestudio'
                 if SETTINGS['image_provider'] not in IMAGE_PROVIDERS:
                     SETTINGS['image_provider'] = 'comfyui'
-                if SETTINGS.get('motion_provider') not in ('comfyui', 'kie'):
+                if SETTINGS.get('motion_provider') not in MOTION_PROVIDERS:
                     SETTINGS['motion_provider'] = 'comfyui'
                 if SETTINGS.get('kie_motion_resolution') not in ('480p', '720p'):
                     SETTINGS['kie_motion_resolution'] = '720p'

@@ -52,21 +52,29 @@ O servidor usa apenas a biblioteca padrão do Python; não há `pip install` de 
 |---|---|---|
 | Roteiro | Ollama com um modelo instalado | OpenAI, Google Gemini ou endpoint compatível com OpenAI (por exemplo, serviços que ofereçam essa API) |
 | Voz | VoiceStudio com um mecanismo TTS configurado | ElevenLabs ou outros provedores exibidos nas configurações |
-| Imagens | ComfyUI com o workflow/modelos de imagem | OpenAI, Google Gemini ou provedor KIE disponível no aplicativo |
-| Movimento de vídeo | ComfyUI com o workflow de LTX-2 | Pode ser desativado; geração de movimento por imagem e montagem continuam usando processamento local |
+| Imagens | ComfyUI com o workflow/modelos de imagem | OpenAI, Google Gemini, Kie AI, fal.ai ou Replicate |
+| Movimento de vídeo | ComfyUI com o workflow de LTX-2 | Kie AI, fal.ai ou Replicate; pode ser desativado |
 | Música gerada | ComfyUI com ACE-Step e workflow de música | Importar arquivos de música na biblioteca do estúdio |
 
-As alternativas dependem das opções exibidas na versão em uso, de uma chave válida e da disponibilidade/termos do provedor. Serviços locais e seus modelos precisam ser instalados separadamente. O script de preparação apenas verifica se ComfyUI, Ollama e VoiceStudio respondem.
+As alternativas dependem das opções exibidas na versão em uso, de uma chave válida e da disponibilidade/termos do provedor. Para evitar instalação de modelos no PC, configure provedores em nuvem para roteiro, voz, imagens e movimento. Em **Configurações › Provedores de IA**, os defaults de imagem são Flux Schnell em fal.ai (`fal-ai/flux/schnell`) ou Replicate (`black-forest-labs/flux-schnell`); para movimento, Wan 2.2 I2V em fal.ai (`fal-ai/wan/v2.2-a14b/image-to-video`), Replicate (`wan-video/wan-2.2-i2v-fast`) ou Kie AI. Crie a chave/token nos sites oficiais ([fal.ai](https://fal.ai/dashboard/keys), [Replicate](https://replicate.com/account/api-tokens), [Kie AI](https://kie.ai/)) e use **Salvar e testar**. Imagem e movimento em nuvem não precisam de GPU local nem dos pesos do ComfyUI; a montagem final do MP4 ainda usa o FFmpeg do computador. Cada provedor cobra conforme a conta e recebe os prompts/imagens necessários para processar a geração.
+
+Serviços locais e seus modelos precisam ser instalados separadamente. O script de preparação apenas verifica se ComfyUI, Ollama e VoiceStudio respondem; ele não baixa modelos nem extensões.
 
 ### Workflows e modelos do ComfyUI
 
-Os workflows versionados neste repositório apontam para estes arquivos de modelo:
+Os workflows versionados neste repositório apontam para estes arquivos. Baixe-os das páginas oficiais/reempacotadas da Comfy-Org no Hugging Face: [Z-Image Turbo](https://huggingface.co/Comfy-Org/Z-Image-Turbo), [LTX-2](https://huggingface.co/Comfy-Org/ltx-2) e [ACE-Step 1.5](https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files). Confira as licenças e selecione exatamente os nomes abaixo; vários arquivos têm muitos GB.
 
 - **Imagem** (`workflow.json`): `z_image_turbo_bf16.safetensors`, `qwen_3_4b.safetensors` e `ae.safetensors`.
-- **Movimento** (`workflow_video.json`): `ltx-2-19b-dev-fp8.safetensors`, `ltx-2-19b-distilled-lora-384.safetensors` e `ltx-2-spatial-upscaler-x2-1.0.safetensors`.
+- **Movimento** (`workflow_video.json`): `ltx-2-19b-dev-fp8.safetensors`, `gemma_3_12B_it_fp4_mixed.safetensors`, `ltx-2-19b-distilled-lora-384.safetensors` e `ltx-2-spatial-upscaler-x2-1.0.safetensors`.
 - **Música** (`workflow_music.json`): `ace_step_1.5_turbo_aio.safetensors`.
 
-Baixe os modelos de fontes oficiais ou autorizadas e confira as licenças de cada modelo. Coloque cada arquivo na pasta de modelos indicada pelo respectivo workflow/ComfyUI. As revisões do ComfyUI podem alterar nós e formatos: atualize o ComfyUI, abra o workflow, use o ComfyUI Manager para instalar os nós ausentes (quando houver) e reinicie o ComfyUI. Confirme que cada workflow roda no próprio ComfyUI antes de gerar pelo estúdio.
+Baixe os modelos de fontes oficiais ou autorizadas e confira as licenças de cada modelo. Use estas pastas padrão do ComfyUI:
+
+- **Imagem:** `z_image_turbo_bf16.safetensors` em `models/diffusion_models/`; `qwen_3_4b.safetensors` em `models/text_encoders/`; `ae.safetensors` em `models/vae/`.
+- **LTX-2:** `ltx-2-19b-dev-fp8.safetensors` em `models/checkpoints/`; `gemma_3_12B_it_fp4_mixed.safetensors` em `models/text_encoders/`; LoRA em `models/loras/`; upscaler em `models/upscale_models/`.
+- **ACE-Step:** `ace_step_1.5_turbo_aio.safetensors` em `models/checkpoints/`.
+
+Instale e abra uma versão recente do ComfyUI. Os workflows API do projeto usam nós nativos de Z-Image, LTX e ACE-Step, portanto não requerem extensões adicionais numa instalação atualizada. Instale o [ComfyUI Manager](https://docs.comfy.org/manager/install) para atualizar o ComfyUI e, se surgir erro de nó ausente, abra **Manager › Custom Nodes**, instale o nó indicado, reinicie o ComfyUI e tente de novo. Veja também a [documentação de workflows do ComfyUI](https://docs.comfy.org/interface/features/template). Se os modelos locais não couberem no PC, selecione fal.ai, Replicate, Kie AI ou outro provedor de nuvem e não instale esses pesos.
 
 Endereços locais padrão esperados:
 
@@ -102,7 +110,7 @@ Endereços locais padrão esperados:
 
 ## 4. Iniciar e configurar
 
-1. Abra ComfyUI, Ollama e VoiceStudio se for usá-los localmente.
+1. Abra ComfyUI, Ollama e VoiceStudio se for usá-los localmente. Se configurou fal.ai/Replicate/Kie AI para imagem e movimento, não precisa iniciar ComfyUI nem baixar os pesos LTX/Z-Image.
 2. Na pasta do projeto, inicie:
 
    ```powershell
