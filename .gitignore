@@ -34,3 +34,13 @@ Thumbs.db
 /build/
 /dist/
 /release/
+
+/release-desktop/
+/build-desktop/
+
+/release-native/
+/build-native/
+
+/release-app/
+
+/release-login/

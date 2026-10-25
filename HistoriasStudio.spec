@@ -1,17 +1,22 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 root = Path(SPECPATH)
-datas = [(str(root / 'static'), 'static')]
+vendor = root / 'build-native' / 'vendor'
+sys.path.insert(0, str(vendor))
+datas = [(str(root / 'static'), 'static')] + collect_data_files('webview') + collect_data_files('pythonnet') + collect_data_files('clr_loader')
+binaries = collect_dynamic_libs('webview')
 for name in ('workflow.json', 'workflow_video.json', 'workflow_music.json'):
     datas.append((str(root / name), '.'))
 
 a = Analysis(
     [str(root / 'launcher.py')],
-    pathex=[str(root)],
-    binaries=[],
+    pathex=[str(root), str(vendor)],
+    binaries=binaries,
     datas=datas,
-    hiddenimports=['server', 'pipeline', 'narrative', 'music_generation', 'score', 'local_auth', 'runtime_paths'],
+    hiddenimports=['server', 'pipeline', 'narrative', 'music_generation', 'score', 'local_auth', 'runtime_paths', 'diagnostics', 'webview.platforms.edgechromium', 'webview.platforms.winforms', 'clr', 'clr_loader', 'pythonnet'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

@@ -4,6 +4,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from runtime_paths import data_home, resource_root
 import pipeline
+import diagnostics
 import local_auth
 ROOT=resource_root()
 HOST=os.getenv('HOST','127.0.0.1'); PORT=int(os.getenv('PORT','8787'))
@@ -14,6 +15,7 @@ AUDIO_DIR=data_home()/'audio'; AUDIO_DIR.mkdir(parents=True,exist_ok=True)
 SAMPLE_TEXT='Olá! Esta é uma demonstração da voz selecionada para o Histórias Studio.'
 DEFAULT=json.loads((ROOT/'workflow.json').read_text(encoding='utf-8'))
 lock=threading.RLock(); jobs={}; queue=[]; active=None; narrations={}
+HTTP_SERVER=None
 NEG=DEFAULT['71']['inputs']['text']
 AUTH_LOCK=threading.RLock(); AUTH_SESSIONS={}; AUTH_FAILURES={}
 AUTH_COOKIE='historias_studio_session'; AUTH_SESSION_SECONDS=12*60*60
@@ -246,6 +248,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if _auth_route(self,'GET'): return
         if _requires_auth(self): _auth_reply(self,401,{'error':'Entre na sua conta local para continuar.'}); return
+        if self.path=='/api/diagnostics': self.send(200,diagnostics.scan()); return
         if pipeline.route(self,'GET'): return
         p=urllib.parse.urlparse(self.path)
         if p.path=='/api/voice/status':
@@ -322,6 +325,12 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if _auth_route(self,'POST'): return
             if _requires_auth(self): _auth_reply(self,401,{'error':'Entre na sua conta local para continuar.'}); return
+            route=urllib.parse.urlparse(self.path).path
+            if route=='/api/diagnostics/install-ffmpeg': self.send(200,diagnostics.install_ffmpeg()); return
+            if route=='/api/app/shutdown':
+                self.send(200,{'ok':True})
+                if HTTP_SERVER: threading.Thread(target=HTTP_SERVER.shutdown,daemon=True).start()
+                return
             if pipeline.route(self,'POST'): return
             data=json.loads(self.rfile.read(min(int(self.headers.get('Content-Length','0')),1000000)))
             if self.path=='/api/plan':
@@ -346,11 +355,13 @@ class Handler(BaseHTTPRequestHandler):
             self.send(404,{'error':'Not found'})
         except Exception as e:self.send(400,{'error':str(e)})
 def serve_forever():
+    global HTTP_SERVER
     threading.Thread(target=run,daemon=True).start()
     pipeline.start()
     print(f'Histórias Studio: http://localhost:{PORT} | ComfyUI: {COMFY} | Ollama: {OLLAMA} | VoiceStudio: {VOICE}',flush=True)
-    print(f'Estúdio manual (versão anterior): http://localhost:{PORT}/estudio-manual.html',flush=True)
-    ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()
+    HTTP_SERVER=ThreadingHTTPServer((HOST,PORT),Handler)
+    try: HTTP_SERVER.serve_forever()
+    finally: HTTP_SERVER.server_close()
 
 if __name__=='__main__':
     serve_forever()

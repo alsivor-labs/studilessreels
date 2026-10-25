@@ -9,10 +9,19 @@ if ([version]$version -lt [version]'3.10') { throw 'A build do Windows exige Pyt
 if ($LASTEXITCODE -ne 0) { & python -m pip install --upgrade pyinstaller }
 if ($LASTEXITCODE -ne 0) { throw 'Não foi possível preparar PyInstaller.' }
 
-New-Item -ItemType Directory -Force release | Out-Null
-& python -m PyInstaller --clean --noconfirm --distpath release --workpath build HistoriasStudio.spec
+$env:TEMP = Join-Path $PSScriptRoot 'build-native\pip-temp'
+$env:TMP = $env:TEMP
+$env:PIP_CACHE_DIR = Join-Path $PSScriptRoot 'build-native\pip-cache'
+New-Item -ItemType Directory -Force $env:TEMP,$env:PIP_CACHE_DIR | Out-Null
+$vendor = Join-Path $PSScriptRoot 'build-native\vendor'
+if (-not (Test-Path (Join-Path $vendor 'webview\__init__.py'))) {
+    & python -m pip install --no-build-isolation --no-cache-dir --target $vendor pywebview==6.2.1
+    if ($LASTEXITCODE -ne 0) { throw 'Não foi possível preparar pywebview e WebView2 para a janela desktop.' }
+}
+New-Item -ItemType Directory -Force release-login | Out-Null
+& python -m PyInstaller --clean --noconfirm --distpath release-login --workpath build-native HistoriasStudio.spec
 if ($LASTEXITCODE -ne 0) { throw 'PyInstaller falhou ao gerar o executável.' }
-Copy-Item README.md release\LEIA-ME.md -Force
-Copy-Item docs\INSTALACAO_E_USO.md release\INSTALACAO_E_USO.md -Force
-Compress-Archive -Path release\HistoriasStudio.exe,release\LEIA-ME.md,release\INSTALACAO_E_USO.md -DestinationPath release\HistoriasStudio-Windows-x64.zip -CompressionLevel Optimal -Force
-Write-Host 'Release pronta em release\HistoriasStudio.exe e release\HistoriasStudio-Windows-x64.zip' -ForegroundColor Green
+Copy-Item README.md release-login\LEIA-ME.md -Force
+Copy-Item docs\INSTALACAO_E_USO.md release-login\INSTALACAO_E_USO.md -Force
+Compress-Archive -Path release-login\HistoriasStudio.exe,release-login\LEIA-ME.md,release-login\INSTALACAO_E_USO.md -DestinationPath release-login\HistoriasStudio-Windows-x64.zip -CompressionLevel Optimal -Force
+Write-Host 'Release pronta em release-login\HistoriasStudio.exe e release-login\HistoriasStudio-Windows-x64.zip' -ForegroundColor Green

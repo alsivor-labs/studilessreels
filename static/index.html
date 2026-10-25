@@ -62,6 +62,7 @@ svg.fill{fill:currentColor;stroke:none}
 .auth-card .auth-sub{color:var(--mute);line-height:1.55;margin:0 0 25px}
 .auth-card .field{margin-bottom:17px}.auth-card .label{font-size:14px;margin-bottom:8px}.auth-card .input{height:48px;font-size:15px}
 .auth-note{padding:12px 14px;background:var(--soft);border-radius:11px;color:var(--mute);font-size:13px;line-height:1.5;margin-top:18px}
+.auth-switch{display:block;width:100%;margin-top:16px;text-align:center;color:var(--pt);font-size:14px;font-weight:600;padding:10px;border-radius:9px}.auth-switch:hover{background:var(--pl)}
 .auth-error{min-height:20px;color:var(--err);font-size:13px;margin:-5px 0 12px}
 .auth-card .btn{width:100%;height:48px;font-size:15px}
 .auth-offline{color:var(--err);text-align:center;margin:20px}
@@ -461,12 +462,13 @@ async function api(path, opts={}) {
   return j;
 }
 let CURRENT_USER = null;
-function showAuth(state, message='') {
-  const setup = !!state?.setup_needed;
+function showAuth(state, message='', register=false) {
+  const canRegister = !!state?.setup_needed;
+  const setup = canRegister && register;
   document.body.classList.add('auth-required');
   $('#auth-screen').innerHTML = `<div class="auth-brand"><span class="auth-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></span>Histórias Studio</div>
-    <h1>${setup ? 'Crie seu acesso local' : 'Que bom ter você de volta'}</h1>
-    <p class="auth-sub">${setup ? 'Cadastre o usuário deste computador para abrir seu estúdio.' : 'Entre para continuar no seu estúdio neste computador.'}</p>
+    <h1>${setup ? 'Crie seu acesso local' : 'Entrar no Histórias Studio'}</h1>
+    <p class="auth-sub">${setup ? 'Cadastre o usuário deste computador para abrir seu estúdio.' : canRegister ? 'Ainda não há uma conta neste computador. Entre ou crie seu acesso local.' : 'Entre para continuar no seu estúdio neste computador.'}</p>
     <form onsubmit="submitAuth(event)">
       ${setup ? `<div class="field"><label class="label" for="auth-name">Seu nome</label><input class="input" id="auth-name" name="name" autocomplete="name" required minlength="2" maxlength="60" placeholder="Como quer ser chamado?"></div>` : ''}
       <div class="field"><label class="label" for="auth-username">Usuário</label><input class="input" id="auth-username" name="username" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}" placeholder="Ex.: allan" autofocus></div>
@@ -475,6 +477,7 @@ function showAuth(state, message='') {
       <div class="auth-error" id="auth-error" role="alert">${esc(message)}</div>
       <button class="btn" type="submit">${setup ? 'Criar usuário e entrar' : 'Entrar'}</button>
     </form>
+    ${canRegister ? `<button class="auth-switch" type="button" onclick="showAuth({setup_needed:true}, '', ${!setup})">${setup ? 'Voltar para login' : 'Não tem conta? Criar conta'}</button>` : ''}
     <div class="auth-note">Seu acesso fica salvo neste PC. A senha é armazenada como hash; não é enviada a nenhum serviço externo. O estúdio e os arquivos continuam locais.</div>`;
 }
 async function submitAuth(event) {
@@ -1220,11 +1223,11 @@ async function uploadMusic(files) {
 function viewGuides() {
   renderNav('guides'); crumb([['Guias']]);
   $('#view').innerHTML = `<div class="narrow"><div class="pagehead"><h1>Guias</h1></div>
-  <div class="card guide"><h3>Instale o que o projeto precisa</h3><p>Depois de baixar pelo Git, você não precisa instalar pacotes Python: o servidor usa a biblioteca padrão do Python. No Windows, instale:</p><ol>
-    <li><b>Git</b> para baixar e atualizar o código — <a href="https://git-scm.com/downloads" target="_blank" rel="noopener">baixar Git</a>.</li>
-    <li><b>Python 3.10 ou superior</b> — <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">baixar Python</a>. Marque “Add Python to PATH” durante a instalação.</li>
+  <div class="card guide" id="pcDiag"><h3>Diagnóstico deste computador</h3><p>O Histórias Studio verifica os requisitos do aplicativo e recomenda geração local ou na nuvem.</p><div id="pcDiagData" class="muted">Verificando computador…</div><div class="inline" style="gap:8px;margin-top:14px"><button class="btn sm ghost" onclick="loadPcDiagnosis()">Diagnosticar novamente</button><button class="btn sm" id="pcDiagInstall" style="display:none" onclick="installPcFfmpeg()">Instalar FFmpeg</button><button class="btn sm ghost" onclick="window.open(&quot;https://docs.comfy.org/installation/desktop/windows&quot;,&quot;_blank&quot;)">Baixar ComfyUI</button><button class="btn sm ghost" onclick="stopStudioApp()">Encerrar aplicativo</button></div></div>  <div class="card guide"><h3>Instale o que o projeto precisa</h3><p>O executável do Histórias Studio já inclui Python e abre a plataforma numa janela desktop própria do Histórias Studio. Não é necessário Git para usar a release. Para rodar pelo código-fonte, instale Git e Python 3.10+. O FFmpeg é necessário em qualquer modo para exportar o vídeo.</p><ol>
+    <li><b>Git</b> para baixar e atualizar o código-fonte (não precisa para o executável) — <a href="https://git-scm.com/downloads" target="_blank" rel="noopener">baixar Git</a>.</li>
+    <li><b>Python 3.10 ou superior</b> (somente para executar pelo código-fonte; a release já inclui Python) — <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">baixar Python</a>. Marque “Add Python to PATH” durante a instalação.</li>
     <li><b>FFmpeg</b> (inclui <code>ffmpeg</code> e <code>ffprobe</code>) para montar o vídeo, cortar áudio e medir duração — <a href="https://ffmpeg.org/download.html" target="_blank" rel="noopener">instruções oficiais</a>.</li>
-    <li><b>Edge ou Chrome</b> atualizado para abrir o estúdio.</li></ol>
+    <li><b>WebView2 Runtime</b> para abrir o executável como aplicativo desktop — <a href="https://developer.microsoft.com/microsoft-edge/webview2/" target="_blank" rel="noopener">baixar runtime oficial</a>. Para iniciar pelo código-fonte no navegador, use Edge ou Chrome.</li></ol>
     <p>Na pasta do projeto, rode <code>powershell -ExecutionPolicy Bypass -File .\\instalar_windows.ps1</code> e depois <code>iniciar_windows.bat</code>. O verificador tenta instalar Python/FFmpeg com <code>winget</code>, quando necessário. Feche e reabra o terminal após uma instalação para atualizar o PATH.</p>
     <p>O aplicativo abre em <a href="http://localhost:8787" target="_blank" rel="noopener">http://localhost:8787</a>.</p></div>
   <div class="card guide"><h3>Escolha como gerar com IA</h3><p>Para criar um vídeo, configure um provedor de roteiro, um de voz e um de imagem em <b>Configurações → Provedores de IA</b>. Você pode usar serviços locais ou APIs na nuvem. Na configuração local padrão, instale e abra:</p><ul>
@@ -1254,6 +1257,30 @@ function viewGuides() {
     <li>Os vídeos agendados são gerados algumas horas antes do horário escolhido, enquanto o PC e o servidor estão ligados.</li>
     <li>Na aba <b>Vídeos</b> você assiste, baixa o MP4 e copia o título, a descrição e as hashtags.</li>
     <li>Não gostou? Use <b>Gerar de novo</b>.</li></ul></div></div>`;
+  loadPcDiagnosis();
+}
+async function loadPcDiagnosis() {
+  const target = document.getElementById('pcDiagData'); if (!target) return;
+  target.innerHTML = '<span class="muted">Verificando computador…</span>';
+  try {
+    const d = await api('/api/diagnostics');
+    const gpu = d.nvidia?.length ? d.nvidia.map(x => `${esc(x.name)} · ${x.vram_gb} GB VRAM`).join('<br>') : (d.gpu_names?.length ? d.gpu_names.map(esc).join(', ') + ' · VRAM NVIDIA não detectada' : 'Não identificada');
+    const local = d.local_video ? 'Este PC atende ao perfil recomendado para experimentar imagem e movimento local com ComfyUI/LTX-2.' : d.local_images ? 'Este PC pode experimentar imagens locais no ComfyUI; para movimento LTX-2, recomendamos provedor na nuvem.' : 'Este PC não atende ao perfil recomendado para modelos locais pesados. Recomendamos provedores de nuvem para roteiro, voz, imagens e movimento.';
+    target.innerHTML = `<div class="grid2"><div><b>Sistema</b><br>${esc(d.system)} · ${d.cores} núcleos</div><div><b>Memória</b><br>${d.ram_gb} GB RAM</div><div><b>Placa de vídeo</b><br>${gpu}</div><div><b>Espaço livre</b><br>${d.disk_free_gb} GB</div><div><b>Python</b><br>${d.frozen ? 'Incluído no executável' : 'Versão ' + esc(d.python) + ' (necessário para rodar pelo código-fonte)'}</div><div><b>WebView2</b><br>${d.webview2 ? 'Instalado' : 'Não identificado'}</div><div><b>Git</b><br>${d.git ? 'Instalado' : 'Não encontrado (opcional para o executável)'}</div><div><b>FFmpeg e ffprobe</b><br>${d.ffmpeg ? 'Encontrados' : 'Não encontrados — necessários para exportar o MP4'}</div><div><b>ComfyUI</b><br>${d.comfy ? 'Aberto em ' + esc(d.comfy_url) : 'Não está aberto localmente'}</div></div><p style="margin:14px 0 0"><b>Recomendação:</b> ${local}</p><p class="help">Perfis sugeridos: imagens locais a partir de GPU NVIDIA com cerca de 12 GB VRAM, 32 GB RAM e 100 GB livres; LTX-2 local recomenda 32 GB VRAM, 64 GB RAM e 100 GB livres. São estimativas, não garantias. Para usar nuvem, configure suas chaves em Configurações → Provedores de IA.</p>`;
+    const install = document.getElementById('pcDiagInstall'); if (install) { install.style.display = d.ffmpeg ? 'none' : ''; install.disabled = false; install.textContent = 'Instalar FFmpeg'; }
+  } catch (e) { target.innerHTML = `<div class="err">Não foi possível concluir o diagnóstico: ${esc(e.message)}</div>`; }
+}
+async function installPcFfmpeg() {
+  if (!confirm('O Histórias Studio vai usar o winget para baixar e instalar FFmpeg e ffprobe neste computador. Continuar?')) return;
+  const button = document.getElementById('pcDiagInstall'); if (button) { button.disabled = true; button.textContent = 'Instalando…'; }
+  try { const result = await api('/api/diagnostics/install-ffmpeg', {json:{}}); toast(result.ok ? result.message : result.error, 9000); }
+  catch (e) { toast(e.message, 9000); }
+  finally { await loadPcDiagnosis(); }
+}
+async function stopStudioApp() {
+  if (!confirm('Encerrar o Histórias Studio neste computador? A geração e os trabalhos em andamento serão interrompidos.')) return;
+  try { await api('/api/app/shutdown', {json:{}}); document.body.innerHTML = '<div style="font:16px Segoe UI;padding:48px;color:#202432"><h2>Histórias Studio encerrado</h2><p>Você pode fechar esta aba. Para iniciar novamente, abra HistoriasStudio.exe.</p></div>'; }
+  catch (e) { toast(e.message); }
 }
 const GSTEPS = [['script','Roteiro','type'],['voice','Narração','mic'],['images','Imagens','image'],['motion','Movimento','film'],['music','Trilha','music'],['render','Montagem','zap']];
 const GORDER = {queued:-1, script:0, voice:1, images:2, motion:3, music:4, render:5, done:6};

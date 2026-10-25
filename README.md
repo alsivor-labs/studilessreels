@@ -1,6 +1,6 @@
 # Histórias Studio
 
-Aplicação local para planejar séries de histórias, gerar narração e criar vídeos verticais com imagens, movimento, legendas e trilha sonora. A interface roda no navegador; os serviços de IA e os arquivos de trabalho ficam no seu computador ou nas contas de API que você configurar.
+Aplicação local para planejar séries de histórias, gerar narração e criar vídeos verticais com imagens, movimento, legendas e trilha sonora. A interface roda numa janela desktop própria na release Windows (WebView2) ou no navegador ao iniciar pelo código-fonte; os serviços de IA e arquivos ficam no computador ou nas contas de API escolhidas.
 
 > Projeto em desenvolvimento. Consulte [Instalação e uso](docs/INSTALACAO_E_USO.md) antes de começar. Os resultados e o tempo de geração dependem dos modelos, serviços, hardware e configurações escolhidos.
 
@@ -30,7 +30,7 @@ A publicação automática em redes sociais não está implementada. As integra�
 ## Requisitos resumidos
 
 - Windows 10/11 de 64 bits é o ambiente documentado pelos atalhos incluídos.
-- Python 3.10 ou superior e FFmpeg com `ffprobe`.
+- Python 3.10 ou superior para executar pelo código-fonte; a release Windows já inclui Python. FFmpeg com `ffprobe` é necessário para exportar vídeos.
 - Navegador atualizado, como Edge ou Chrome.
 - Para geração local de IA: ComfyUI e/ou Ollama e VoiceStudio, conforme os provedores usados.
 - Uma GPU NVIDIA com CUDA é recomendada para geração local no ComfyUI. Para o fluxo completo com LTX-2, considere 32 GB de VRAM, 64 GB de RAM e ao menos 100 GB livres para modelos e arquivos. Esse perfil é uma recomendação para ter margem, não uma garantia de desempenho ou compatibilidade.
@@ -42,11 +42,11 @@ Veja as configurações mínimas, recomendadas e os requisitos por provedor em [
 
 ## Executável para Windows
 
-Quem baixar o executável na página **Releases** não precisa instalar Python nem Git. Extraia `HistoriasStudio-Windows-x64.zip` ou baixe `HistoriasStudio.exe` e abra-o. Na primeira tela, o diagnóstico mostra memória, placa de vídeo, espaço livre, FFmpeg e ComfyUI. Python já acompanha o executável. Se faltar FFmpeg/ffprobe, o botão de instalação usa o `winget` após confirmação; se `winget` não estiver disponível, siga o guia mostrado na tela.
+Quem baixar o executável na página **Releases** não precisa instalar Python nem Git. Extraia `HistoriasStudio-Windows-x64.zip` ou baixe `HistoriasStudio.exe` e abra-o. O executável inicia o servidor local e abre uma janela desktop própria com a plataforma embutida; não abre o navegador nem uma janela separada de verificação. Dentro de **Guias**, o diagnóstico mostra memória, placa de vídeo, espaço livre, FFmpeg e ComfyUI. Python acompanha o executável. O Windows precisa do Microsoft Edge WebView2 Runtime para exibir a janela. Se faltar FFmpeg/ffprobe, o botão de instalação integrado usa o `winget` após confirmação; se `winget` não estiver disponível, siga o guia da própria plataforma.
 
-O diagnóstico recomenda ComfyUI local somente quando a configuração do computador parece adequada; para máquinas sem recursos para modelos locais, configure os provedores de nuvem na plataforma. A janela inicial abre o estúdio no navegador e precisa permanecer aberta enquanto ele estiver em uso. A conta e os arquivos ficam no perfil local do Windows, em `%LOCALAPPDATA%\Historias Studio`; o desinstalador ainda não é distribuído, então remova essa pasta manualmente apenas se quiser apagar também os dados locais.
+O diagnóstico recomenda ComfyUI local somente quando a configuração do computador parece adequada; para máquinas sem recursos para modelos locais, configure os provedores de nuvem na plataforma. Fechar a janela encerra o servidor local; também é possível usar o botão **Encerrar aplicativo** em **Guias**. A conta e os arquivos ficam no perfil local do Windows, em `%LOCALAPPDATA%\Historias Studio`; o desinstalador ainda não é distribuído, então remova essa pasta manualmente apenas se quiser apagar também os dados locais.
 
-Para montar uma nova release de Windows em um PC de desenvolvimento com Python 3.10+, execute `powershell -ExecutionPolicy Bypass -File .\build_windows.ps1`. Os arquivos para publicar são `release\HistoriasStudio.exe` e `release\HistoriasStudio-Windows-x64.zip`; a pasta `release` também contém os guias. O build instala/usa PyInstaller no computador de desenvolvimento, não no computador de quem usa a release.
+Para montar uma nova release de Windows em um PC de desenvolvimento com Python 3.10+, execute `powershell -ExecutionPolicy Bypass -File .\build_windows.ps1`. Os arquivos para publicar são `release-login\HistoriasStudio.exe` e `release-login\HistoriasStudio-Windows-x64.zip`; a pasta `release-login` também contém os guias. O build instala/usa PyInstaller no computador de desenvolvimento, não no computador de quem usa a release.
 ## Início rápido no Windows
 
 1. Instale Git, Python 3.10+ e FFmpeg. Instale e prepare os serviços que pretende usar; o script do projeto verifica, mas não instala ComfyUI, Ollama nem VoiceStudio.
