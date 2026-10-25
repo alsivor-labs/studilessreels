@@ -74,11 +74,17 @@ def install(p):
             with gpu_lock: return fn(*args, **kwargs)
         return wrapped
     def release_voice():
+        # VoiceStudio is only a local GPU-memory optimization. Never probe it
+        # when the selected narration provider is a cloud service, and never
+        # let an unavailable optional service abort script/image generation.
+        if p.SETTINGS.get('voice_provider', 'voicestudio') != 'voicestudio': return
         try: loaded=p.external(p.VOICE,'/model/loaded',timeout=10)
-        except (p.urllib.error.URLError,TimeoutError): return
+        except Exception: return
         for model in loaded.get('models',[]):
             mid=model.get('id') or model.get('model_id') if isinstance(model,dict) else model
-            if mid: p.external(p.VOICE,'/model/unload/'+p.urllib.parse.quote(str(mid),safe=''),{},timeout=60,raw=True)
+            if mid:
+                try: p.external(p.VOICE,'/model/unload/'+p.urllib.parse.quote(str(mid),safe=''),{},timeout=60,raw=True)
+                except Exception: pass
     def release_comfy():
         try: p.external(p.COMFY,'/free',{'unload_models':True,'free_memory':True},timeout=30,raw=True)
         except (p.urllib.error.URLError,TimeoutError): pass

@@ -40,6 +40,13 @@ Na primeira abertura, crie um usuário local com nome, nome de usuário e senha.
 
 Veja as configurações mínimas, recomendadas e os requisitos por provedor em [Instalação e uso](docs/INSTALACAO_E_USO.md).
 
+## Executável para Windows
+
+Quem baixar o executável na página **Releases** não precisa instalar Python nem Git. Extraia `HistoriasStudio-Windows-x64.zip` ou baixe `HistoriasStudio.exe` e abra-o. Na primeira tela, o diagnóstico mostra memória, placa de vídeo, espaço livre, FFmpeg e ComfyUI. Python já acompanha o executável. Se faltar FFmpeg/ffprobe, o botão de instalação usa o `winget` após confirmação; se `winget` não estiver disponível, siga o guia mostrado na tela.
+
+O diagnóstico recomenda ComfyUI local somente quando a configuração do computador parece adequada; para máquinas sem recursos para modelos locais, configure os provedores de nuvem na plataforma. A janela inicial abre o estúdio no navegador e precisa permanecer aberta enquanto ele estiver em uso. A conta e os arquivos ficam no perfil local do Windows, em `%LOCALAPPDATA%\Historias Studio`; o desinstalador ainda não é distribuído, então remova essa pasta manualmente apenas se quiser apagar também os dados locais.
+
+Para montar uma nova release de Windows em um PC de desenvolvimento com Python 3.10+, execute `powershell -ExecutionPolicy Bypass -File .\build_windows.ps1`. Os arquivos para publicar são `release\HistoriasStudio.exe` e `release\HistoriasStudio-Windows-x64.zip`; a pasta `release` também contém os guias. O build instala/usa PyInstaller no computador de desenvolvimento, não no computador de quem usa a release.
 ## Início rápido no Windows
 
 1. Instale Git, Python 3.10+ e FFmpeg. Instale e prepare os serviços que pretende usar; o script do projeto verifica, mas não instala ComfyUI, Ollama nem VoiceStudio.

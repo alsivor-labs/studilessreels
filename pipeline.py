@@ -13,12 +13,13 @@ Somente biblioteca padrão do Python.
 import json, os, re, io, time, uuid, wave, random, shutil, threading, subprocess, math, datetime, base64, concurrent.futures, mimetypes
 import urllib.request, urllib.parse, urllib.error
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent
-DATA = ROOT / 'data'
-VIDEOS_DIR = ROOT / 'videos'
-MUSIC_DIR = ROOT / 'music'
-EXPORT_DIR = ROOT / 'exportados'
+from runtime_paths import data_home, resource_root
+ROOT = resource_root()
+DATA_HOME = data_home()
+DATA = DATA_HOME / 'data'
+VIDEOS_DIR = DATA_HOME / 'videos'
+MUSIC_DIR = DATA_HOME / 'music'
+EXPORT_DIR = DATA_HOME / 'exportados'
 STYLE_PREV = DATA / 'style_previews'
 CAST_DIR = DATA / 'cast'
 VOICE_PREV = DATA / 'voice_previews'

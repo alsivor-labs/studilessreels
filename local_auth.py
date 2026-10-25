@@ -6,9 +6,8 @@ import os
 import re
 import threading
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent
-USER_FILE = ROOT / 'data' / 'local_user.json'
+from runtime_paths import data_home
+USER_FILE = data_home() / 'data' / 'local_user.json'
 ITERATIONS = 310_000
 _LOCK = threading.RLock()
 

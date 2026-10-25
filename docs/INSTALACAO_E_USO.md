@@ -2,6 +2,17 @@
 
 Este guia descreve como preparar o Histórias Studio em uma máquina Windows, escolher provedores e gerar um primeiro vídeo. O programa fornece a interface e coordena serviços externos; ele não baixa nem instala os modelos de IA por conta própria.
 
+## Começar pelo executável Windows
+
+Na página de releases do projeto, baixe `HistoriasStudio-Windows-x64.zip` ou `HistoriasStudio.exe`. Extraia o ZIP em uma pasta de sua preferência e abra o executável. A versão para usuários já inclui Python; Git é necessário somente para baixar o código-fonte. Na inicialização, um diagnóstico lê Windows, núcleos, RAM, placa de vídeo NVIDIA/VRAM, espaço livre, FFmpeg/ffprobe e o serviço ComfyUI local.
+
+O FFmpeg e o ffprobe são necessários para montar o arquivo MP4. Se estiverem ausentes, use **Instalar FFmpeg** para solicitar a instalação pelo `winget` ou instale-os manualmente pelo site indicado. O programa não instala modelos de IA automaticamente, pois os arquivos são grandes, cada modelo tem seus próprios termos/licenças e a instalação pode consumir bastante espaço.
+
+O diagnóstico usa estes perfis de recomendação, que não são garantias de desempenho: geração de imagem local no ComfyUI a partir de uma GPU NVIDIA com aproximadamente 12 GB de VRAM, 32 GB de RAM e 100 GB livres; o workflow LTX-2 para movimento recomenda GPU NVIDIA com 32 GB de VRAM, 64 GB de RAM e 100 GB livres. Se a máquina não atender, abra o aplicativo e escolha provedores na nuvem em **Configurações › Provedores de IA**. A nuvem requer internet, contas e chaves dos provedores e pode cobrar por geração. A montagem do vídeo ainda acontece no computador e requer FFmpeg.
+
+No guia dentro do executável, use **Baixar ComfyUI** e siga os botões de download dos modelos. O guia lista os nomes e diretórios que os workflows esperam. Uma instalação recente do ComfyUI fornece os nós usados pelos workflows do projeto; use **ComfyUI Manager** para atualizar ou instalar o nó indicado se uma versão antiga mostrar erro de nó ausente. O projeto não baixa os pesos do modelo por você.
+
+A janela do Histórias Studio inicia o serviço local, abre a interface no navegador e deve ficar aberta enquanto você usa o estúdio. Fechá-la encerra o servidor local. Cadastro, configurações e chaves ficam apenas neste perfil do Windows, em `%LOCALAPPDATA%\Historias Studio`; projetos e exportações também são gravados ali. Faça backups antes de trocar de computador.
 ## 1. Requisitos do computador
 
 ### Uso com provedores na nuvem

@@ -2,14 +2,15 @@ import json, os, threading, time, uuid, urllib.request, urllib.parse, urllib.err
 from http.cookies import SimpleCookie
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
+from runtime_paths import data_home, resource_root
 import pipeline
 import local_auth
-ROOT=Path(__file__).resolve().parent
+ROOT=resource_root()
 HOST=os.getenv('HOST','127.0.0.1'); PORT=int(os.getenv('PORT','8787'))
 COMFY=os.getenv('COMFY_URL','http://127.0.0.1:8188').rstrip('/')
 VOICE=os.getenv('VOICE_URL','http://127.0.0.1:3900').rstrip('/')
 OLLAMA=os.getenv('OLLAMA_URL','http://127.0.0.1:11434').rstrip('/')
-AUDIO_DIR=ROOT/'audio'; AUDIO_DIR.mkdir(exist_ok=True)
+AUDIO_DIR=data_home()/'audio'; AUDIO_DIR.mkdir(parents=True,exist_ok=True)
 SAMPLE_TEXT='Olá! Esta é uma demonstração da voz selecionada para o Histórias Studio.'
 DEFAULT=json.loads((ROOT/'workflow.json').read_text(encoding='utf-8'))
 lock=threading.RLock(); jobs={}; queue=[]; active=None; narrations={}
@@ -344,9 +345,12 @@ class Handler(BaseHTTPRequestHandler):
                 self.send(200,{'ok':True});return
             self.send(404,{'error':'Not found'})
         except Exception as e:self.send(400,{'error':str(e)})
-if __name__=='__main__':
+def serve_forever():
     threading.Thread(target=run,daemon=True).start()
     pipeline.start()
     print(f'Histórias Studio: http://localhost:{PORT} | ComfyUI: {COMFY} | Ollama: {OLLAMA} | VoiceStudio: {VOICE}',flush=True)
     print(f'Estúdio manual (versão anterior): http://localhost:{PORT}/estudio-manual.html',flush=True)
     ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()
+
+if __name__=='__main__':
+    serve_forever()
